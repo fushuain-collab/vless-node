@@ -2,27 +2,20 @@ name: Deploy Worker
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/deploy-worker.yml']
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: 部署 Worker
+      - uses: actions/checkout@v4
+
+      - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
         run: |
-          npm install -g wrangler 2>/dev/null | tail -1
-          echo '' | base64 -d > worker.js
-          cat > wrangler.toml << 'TOML'
-name = "vless-proxy-011"
-main = "worker.js"
-compatibility_date = "2024-11-27"
-TOML
+          npm install -g wrangler 2>&1 | tail -3
           wrangler deploy
           sleep 3
           CODE=$(curl -s -o /dev/null -w "%{http_code}" https://vless-proxy-011.fushuain.workers.dev --max-time 10)
-          echo "Worker status: $CODE"
+          echo "Worker HTTP: $CODE"
