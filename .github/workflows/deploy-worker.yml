@@ -2,131 +2,27 @@ name: Deploy Worker
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/deploy-worker.yml']
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
-      - name: 安装 wrangler
-        run: npm install -g wrangler
-
-      - name: 写入 worker 代码
+      - name: 部署 Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
         run: |
-          cat > worker.js << 'WORKER'
-import { connect } from 'cloudflare:sockets';
-
-let userID = 'e0240134-0986-4b92-a230-fdc8d1200456';
-let proxyIP = '';
-
-export default {
-  async fetch(request, env) {
-    userID = env.UUID || userID;
-    proxyIP = env.PROXYIP || proxyIP;
-    const url = new URL(request.url);
-    const upgrade = request.headers.get('Upgrade');
-    if (upgrade === 'websocket') {
-      return await vlessWsHandler(request, userID, proxyIP);
-    }
-    const path = url.pathname;
-    if (path === `/${userID}`) {
-      const host = request.headers.get('Host');
-      return new Response(getVlessConfig(userID, host), {
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
-    }
-    return new Response('ok');
-  }
-};
-
-async function vlessWsHandler(request, userID, proxyIP) {
-  const [client, server] = Object.values(new WebSocketPair());
-  server.accept();
-  const readable = new ReadableStream({
-    start(controller) {
-      server.addEventListener('message', (e) => controller.enqueue(e.data));
-      server.addEventListener('close', () => controller.close());
-      server.addEventListener('error', (e) => controller.error(e));
-    }
-  });
-  (async () => {
-    const reader = readable.getReader();
-    let first = true;
-    let remoteSocket = null;
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) { if (remoteSocket) remoteSocket.close(); break; }
-      const chunk = value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value.buffer || value);
-      if (first) {
-        first = false;
-        const view = chunk;
-        const version = view[0];
-        const idBytes = view.slice(1, 17);
-        const id = Array.from(idBytes).map(b => b.toString(16).padStart(2,'0')).join('');
-        const uid = `${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;
-        if (uid !== userID) { server.close(); break; }
-        const cmdOffset = 18 + view[17];
-        const cmd = view[cmdOffset];
-        const portOffset = cmdOffset + 1;
-        const port = (view[portOffset] << 8) | view[portOffset+1];
-        const addrType = view[portOffset+2];
-        let addr = '';
-        if (addrType === 1) {
-          addr = view.slice(portOffset+3, portOffset+7).join('.');
-        } else if (addrType === 2) {
-          const len = view[portOffset+3];
-          addr = new TextDecoder().decode(view.slice(portOffset+4, portOffset+4+len));
-        } else if (addrType === 3) {
-          const hex = Array.from(view.slice(portOffset+3, portOffset+19)).map(b=>b.toString(16).padStart(2,'0')).join('');
-          addr = hex.replace(/(.{4})(?=.)/g,'$1:');
-        }
-        server.send(new Uint8Array([version, 0]));
-        const target = proxyIP || addr;
-        try {
-          remoteSocket = connect({ hostname: target, port });
-          const writer = remoteSocket.writable.getWriter();
-          const addrLen = portOffset + 3 + (addrType===1?4:addrType===2?1+view[portOffset+3]:16);
-          await writer.write(chunk.slice(addrLen));
-          writer.releaseLock();
-          remoteSocket.readable.pipeTo(new WritableStream({
-            write(d) { server.send(d); }
-          })).catch(() => server.close());
-        } catch(e) { server.close(); }
-      } else {
-        if (remoteSocket) {
-          const w = remoteSocket.writable.getWriter();
-          await w.write(chunk);
-          w.releaseLock();
-        }
-      }
-    }
-  })();
-  return new Response(null, { status: 101, webSocket: client });
-}
-
-function getVlessConfig(uid, host) {
-  return `vless://${uid}@${host}:443?security=tls&type=ws&path=%2Fvless&host=${host}&sni=${host}&encryption=none#Worker-${host}`;
-}
-WORKER
-
-      - name: 写入 wrangler.toml
-        run: |
+          npm install -g wrangler 2>/dev/null | tail -1
+          echo '' | base64 -d > worker.js
           cat > wrangler.toml << 'TOML'
 name = "vless-proxy-011"
 main = "worker.js"
 compatibility_date = "2024-11-27"
 TOML
-
-      - name: 部署 Worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
-        run: |
           wrangler deploy
-          echo "✅ Worker 部署完成"
-
-      - name: 验证 Worker
-        run: |
-          sleep 5
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://vless-proxy-011.fushuain.workers.dev" --max-time 10)
-          echo "Worker HTTP: $CODE"
+          sleep 3
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" https://vless-proxy-011.fushuain.workers.dev --max-time 10)
+          echo "Worker status: $CODE"
