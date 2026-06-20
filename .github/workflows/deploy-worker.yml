@@ -10,12 +10,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy
+      - name: Deploy Worker + Subscription
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
         run: |
           npm install -g wrangler 2>&1 | tail -3
+
+          # 部署 vless worker
           wrangler deploy
+
+          # 部署订阅到 vless-sub pages
+          mkdir -p pages_out
+          cp sub.txt pages_out/sub
+          echo "ok" > pages_out/index.html
+          wrangler pages deploy pages_out --project-name=vless-sub --branch=main
+
+          # 验证
           sleep 3
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" https://vless-proxy-011.fushuain.workers.dev --max-time 10)
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" https://vless-cf-proxy.fushuain.workers.dev --max-time 10)
           echo "Worker HTTP: $CODE"
+          SUB_COUNT=$(curl -s https://vless-sub-bb7.pages.dev/sub --max-time 10 | base64 -d | grep -c "vless://")
+          echo "Sub nodes: $SUB_COUNT"
