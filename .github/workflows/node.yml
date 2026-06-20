@@ -52,7 +52,7 @@ jobs:
         run: |
           nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
           sleep 10
-          TUNNEL_URL=$(grep -o "https://[a-z0-9-]*\.trycloudflare\.com" tunnel.log | head -1)
+          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
           echo "隧道地址: $TUNNEL_URL"
           echo "TUNNEL_URL=$TUNNEL_URL" >> $GITHUB_ENV
 
@@ -63,46 +63,33 @@ jobs:
           NODE_NAME="🇺🇸美国-GitHub-${{ matrix.node_id }}"
           VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
 
-          # 写入 KV（按 node_id 区分 key）
-          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT }}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_${{ matrix.node_id }}"             -H "Authorization: Bearer ${{ secrets.CF_TOKEN }}"             -H "Content-Type: text/plain"             --data "$VLESS"
+          # 写入 KV
+          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT }}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_${{ matrix.node_id }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_TOKEN }}" \
+            -H "Content-Type: text/plain" \
+            --data "$VLESS"
 
           # 拉取现有订阅，合并新节点
           EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d)
           CLEANED=$(echo "$EXISTING" | grep -v "GitHub-${{ matrix.node_id }}")
-          COMBINED=$(printf "%s
-%s" "$CLEANED" "$VLESS" | base64 -w 0)
+          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | base64 -w 0)
 
           mkdir -p pages_sub
           echo "$COMBINED" > pages_sub/sub
           echo "ok" > pages_sub/index.html
 
           npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${{ secrets.CF_TOKEN }}" wrangler pages deploy pages_sub             --project-name="vless-sub"             --branch="main" 2>&1 | tail -3
+          CLOUDFLARE_API_TOKEN="${{ secrets.CF_TOKEN }}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" \
+            --branch="main" 2>&1 | tail -3
 
           # 仅 node_id=1 时重新部署 Worker（修复 1101）
           if [ "${{ matrix.node_id }}" = "1" ]; then
             echo "重新部署 Worker 修复 1101..."
-            cat > worker.js << WORKEREOF
-import { connect } from 'cloudflare:sockets';
-let userID = '${{ secrets.UUID }}';
-let proxyIP = '';
-export default {
-  async fetch(request, env, ctx) {
-    userID = env.UUID || userID;
-    proxyIP = env.PROXYIP || proxyIP;
-    const upgradeHeader = request.headers.get('Upgrade');
-    if (!upgradeHeader || upgradeHeader !== 'websocket') {
-      return new Response(JSON.stringify({status:"ok"}), {status:200});
-    }
-    return await vlessOverWSHandler(request);
-  }
-};
-WORKEREOF
-            # 用 CF API 直接上传 worker script（绕过 wrangler）
-            curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT }}/workers/scripts/vless-proxy-011"               -H "Authorization: Bearer ${{ secrets.CF_TOKEN }}"               -F "metadata={"main_module":"worker-prod.js","compatibility_date":"2024-11-27","compatibility_flags":["nodejs_compat"]};type=application/json"               -F "worker-prod.js=@-;type=application/javascript+module" << SCRIPTEOF
-export default { async fetch(req, env) { return new Response("ok"); } }
-SCRIPTEOF
-            echo "Worker 重部署完成"
+            CLOUDFLARE_API_TOKEN="${{ secrets.CF_TOKEN }}" wrangler deploy worker-prod.js \
+              --name vless-proxy-011 \
+              --compatibility-date 2024-11-27 \
+              --compatibility-flags nodejs_compat 2>&1 | tail -5 || echo "Worker deploy skipped (no worker-prod.js)"
           fi
 
           echo "✅ 节点已更新: $VLESS"
