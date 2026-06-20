@@ -1,0 +1,90 @@
+name: VLESS Node
+
+on:
+  schedule:
+    - cron: "0 */5 * * *"   # 每5小时重启一次
+  workflow_dispatch:         # 支持手动触发
+
+jobs:
+  run-node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 295     # 跑满4小时55分
+
+    steps:
+      - name: 下载工具
+        run: |
+          # 下载 Xray
+          wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+          unzip -q xray.zip xray
+          chmod +x xray
+
+          # 下载 cloudflared
+          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+
+      - name: 写入 Xray 配置
+        run: |
+          cat > config.json << CONF
+          {
+            "inbounds": [{
+              "port": 8080,
+              "listen": "127.0.0.1",
+              "protocol": "vless",
+              "settings": {
+                "clients": [{"id": "${{ secrets.UUID }}", "level": 0}],
+                "decryption": "none"
+              },
+              "streamSettings": {
+                "network": "ws",
+                "wsSettings": {"path": "/vless"}
+              }
+            }],
+            "outbounds": [{"protocol": "freedom"}]
+          }
+          CONF
+
+      - name: 启动 Xray
+        run: nohup ./xray run -c config.json &
+
+      - name: 启动 Cloudflare Tunnel 并获取域名
+        run: |
+          nohup ./cloudflared tunnel --url http://127.0.0.1:8080 --no-autoupdate > tunnel.log 2>&1 &
+          sleep 8
+          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
+          echo "隧道地址: $TUNNEL_URL"
+          echo "TUNNEL_URL=$TUNNEL_URL" >> $GITHUB_ENV
+
+      - name: 生成节点并更新订阅
+        run: |
+          UUID="${{ secrets.UUID }}"
+          HOST="${TUNNEL_URL#https://}"
+          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#GH-Actions-US"
+          SUB=$(echo -n "$VLESS" | base64 -w 0)
+
+          # 更新到 Cloudflare KV
+          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT }}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_sub" \
+            -H "Authorization: Bearer ${{ secrets.CF_TOKEN }}" \
+            -H "Content-Type: text/plain" \
+            --data "$SUB"
+
+          # 同时更新节点到 Pages 订阅
+          # 把现有CF节点 + 这个GH节点合并
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d)
+          COMBINED=$(echo -e "${EXISTING}\n${VLESS}" | base64 -w 0)
+
+          mkdir -p pages_sub
+          echo "$COMBINED" > pages_sub/sub
+          echo "ok" > pages_sub/index.html
+
+          # 用 wrangler 部署
+          npm install -g wrangler --silent
+          CLOUDFLARE_API_TOKEN="${{ secrets.CF_TOKEN }}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" \
+            --branch="main" 2>&1 | tail -3
+
+          echo "节点已更新: $VLESS"
+
+      - name: 保持运行
+        run: |
+          echo "节点运行中，隧道: $TUNNEL_URL"
+          sleep 17400  # 等待4小时50分
