@@ -28,12 +28,3 @@ vless://e0240134-0986-4b92-a230-fdc8d1200456@172.66.2.7:443?security=tls&type=ws
 vless://e0240134-0986-4b92-a230-fdc8d1200456@172.66.2.8:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#美国-28
 vless://e0240134-0986-4b92-a230-fdc8d1200456@172.66.2.9:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#美国-29
 vless://e0240134-0986-4b92-a230-fdc8d1200456@172.66.2.10:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#美国-30
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.119.61:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#香港HKG-1
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.52.109:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#香港HKG-2
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.176.196:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#香港HKG-3
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.104.126:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#香港HKG-4
-vless://e0240134-0986-4b92-a230-fdc8d1200456@162.159.26.123:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#新加坡SIN-1
-vless://e0240134-0986-4b92-a230-fdc8d1200456@162.159.5.177:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#新加坡SIN-2
-vless://e0240134-0986-4b92-a230-fdc8d1200456@162.159.3.163:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#新加坡SIN-3
-vless://e0240134-0986-4b92-a230-fdc8d1200456@162.159.24.160:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#新加坡SIN-4
-vless://e0240134-0986-4b92-a230-fdc8d1200456@172.64.49.212:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#新加坡SIN-5
