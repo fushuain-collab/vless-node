@@ -75,9 +75,18 @@ jobs:
             ("us","🇺🇸美国西-CF"),("ca","🇨🇦加拿大-CF"),
           ]
 
+          # CF各地区优选IP，SNI用edgetunnel-proxy-hj9.pages.dev（未被墙）
+          ip_map = {
+            "hk":"103.21.244.1","jp":"103.22.200.1","sg":"103.31.4.1",
+            "tw":"104.16.1.1","kr":"104.17.1.1","de":"104.18.1.1",
+            "uk":"104.19.1.1","fr":"104.20.1.1","nl":"104.21.1.1",
+            "au":"104.22.1.1","br":"104.23.1.1","in":"104.24.1.1",
+            "us":"172.64.1.1","ca":"172.65.1.1",
+          }
+          SNI = "edgetunnel-proxy-hj9.pages.dev"
           new_nodes = []
           for code, name in regions:
-            host = f"vless-cf-{code}.fushuain.workers.dev"
+            host = SNI
             vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{quote(name)}"
             new_nodes.append(vless)
             print(f"✅ {name}: {host}")
