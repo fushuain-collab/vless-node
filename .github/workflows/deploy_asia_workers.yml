@@ -45,14 +45,14 @@ jobs:
           new_nodes = []
           for worker, jsfile, name in regions:
             # modules 格式上传（支持 import 语句）
-            metadata = '{"main_module":"worker.js"}'
+            metadata = '{"body_part":"script"}'
             r = subprocess.run([
               "curl", "-s", "-X", "PUT",
               f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}",
               "-H", f"Authorization: Bearer {CF_TOKEN}",
               "-H", "Content-Type: multipart/form-data",
               "-F", f"metadata={metadata};type=application/json",
-              "-F", f"worker.js=@{jsfile};filename=worker.js;type=application/javascript+module"
+              "-F", f"script=@{jsfile};filename=script.js;type=application/javascript"
             ], capture_output=True, text=True)
             result = json.loads(r.stdout)
             if result.get("success"):
