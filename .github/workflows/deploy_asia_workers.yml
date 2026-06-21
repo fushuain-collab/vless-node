@@ -12,62 +12,108 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 部署5个亚洲Worker并写入订阅
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 部署5个亚洲区 Workers
         env:
-          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CF_TOKEN }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL }}
           CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
           UUID: ${{ secrets.UUID }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install -g wrangler
 
-          REGIONS="hk jp sg tw kr"
-          declare -A NAMES=(["hk"]="🇭🇰香港-CF" ["jp"]="🇯🇵日本-CF" ["sg"]="🇸🇬新加坡-CF" ["tw"]="🇨🇳台湾-CF" ["kr"]="🇰🇷韩国-CF")
-          
-          VLESS_LINES=""
+          deploy_worker() {
+            local CODE=$1 PROXY=$2 NAME=$3
+            cat > wrangler-${CODE}.toml << EOF
+          name = "vless-proxy-${CODE}"
+          main = "workers/worker-${CODE}.js"
+          compatibility_date = "2024-11-27"
+          compatibility_flags = ["nodejs_compat"]
+          EOF
+            echo "=== 部署 $NAME ==="
+            wrangler deploy --config wrangler-${CODE}.toml 2>&1 | grep -E "Deployed|workers.dev|Error|error" || true
+          }
 
-          for r in $REGIONS; do
-            WORKER="vless-proxy-${r}"
-            NAME="${NAMES[$r]}"
-            JS_FILE="workers/worker-${r}.js"
+          deploy_worker hk "hk.xn--mesv7f5toqlp.tk"  "🇭🇰香港-CF"
+          deploy_worker jp "jp.xn--mesv7f5toqlp.tk"  "🇯🇵日本-CF"
+          deploy_worker sg "sg.xn--mesv7f5toqlp.tk"  "🇸🇬新加坡-CF"
+          deploy_worker tw "tw.xn--mesv7f5toqlp.tk"  "🇨🇳台湾-CF"
+          deploy_worker kr "cdn-all.xn--b6gac.eu.org" "🇰🇷韩国-CF"
 
-            cat > wrangler-${r}.toml << EOF
-name = "${WORKER}"
-main = "${JS_FILE}"
-compatibility_date = "2024-11-27"
-compatibility_flags = ["nodejs_compat"]
-EOF
+      - name: 把5个节点写入订阅
+        env:
+          CF_TOKEN_BEARER: cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35
+          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
+          UUID: ${{ secrets.UUID }}
+        run: |
+          python3 << 'EOF'
+          import subprocess, json, base64
+          from urllib.parse import quote
 
-            echo "=== 部署 ${NAME} ==="
-            CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler deploy --config wrangler-${r}.toml 2>&1 | tail -3
+          CF_TOKEN = "cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35"
+          CF_ACCOUNT = "2a59ea0bbb2b91a2c98768cff534bec3"
+          UUID = subprocess.check_output("echo $UUID", shell=True, env=__import__('os').environ).decode().strip()
 
-            HOST="${WORKER}.${CF_ACCOUNT:0:8}.workers.dev"
-            # workers.dev 实际格式用账号 subdomain
-            SUBDOMAIN=$(CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler whoami 2>/dev/null | grep -o '[a-z0-9-]*\.workers\.dev' | head -1 | sed 's/\.workers\.dev//')
-            HOST="${WORKER}.workers.dev"
-            
-            ENCODED_NAME=$(python3 -c "from urllib.parse import quote; print(quote('${NAME}'))")
-            VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${ENCODED_NAME}"
-            VLESS_LINES="${VLESS_LINES}${VLESS}\n"
-            echo "  节点: ${NAME} → ${HOST}"
-          done
+          regions = [
+            ("vless-proxy-hk", "🇭🇰香港-CF"),
+            ("vless-proxy-jp", "🇯🇵日本-CF"),
+            ("vless-proxy-sg", "🇸🇬新加坡-CF"),
+            ("vless-proxy-tw", "🇨🇳台湾-CF"),
+            ("vless-proxy-kr", "🇰🇷韩国-CF"),
+          ]
 
-          # 拉取现有订阅，合并写入
-          SUB_URL="https://vless-sub-bb7.pages.dev/sub"
-          EXISTING=$(curl -s "$SUB_URL" | base64 -d 2>/dev/null || echo "")
-          
-          # 去掉旧的同名节点
-          CLEANED=$(echo "$EXISTING" | grep -v "vless-proxy-hk\|vless-proxy-jp\|vless-proxy-sg\|vless-proxy-tw\|vless-proxy-kr\|香港-CF\|日本-CF\|新加坡-CF\|台湾-CF\|韩国-CF")
-          
-          NEW_CONTENT="${CLEANED}"$'\n'"$(printf "$VLESS_LINES")"
-          NEW_B64=$(echo "$NEW_CONTENT" | base64 -w0)
+          new_nodes = []
+          for worker, name in regions:
+            host = f"{worker}.{CF_ACCOUNT[:8].lower()}.workers.dev"
+            # 实际 workers.dev 域名格式
+            host = f"{worker}.fushuain-collab.workers.dev"
+            tag = quote(name)
+            vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{tag}"
+            new_nodes.append(vless)
+            print(f"✅ {name}: {host}")
 
-          # 通过 API 写入 pages_sub/sub
-          SHA=$(curl -s "https://api.github.com/repos/fushuain-collab/vless-node/contents/pages_sub/sub" \
-            -H "Authorization: token $GH_TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))")
-          
-          curl -s -X PUT "https://api.github.com/repos/fushuain-collab/vless-node/contents/pages_sub/sub" \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"message\":\"update sub with asia workers\",\"content\":\"$NEW_B64\",\"sha\":\"$SHA\"}" \
-            | python3 -c "import sys,json; r=json.load(sys.stdin); print('订阅写入:', '✅' if 'content' in r else '❌ '+str(r.get('message','')))"
+          # 拉取现有订阅
+          r = subprocess.run(
+            ["curl", "-s", "https://vless-sub-bb7.pages.dev/sub"],
+            capture_output=True, text=True
+          )
+          existing = base64.b64decode(r.stdout.strip()).decode("utf-8")
+          lines = [l for l in existing.strip().split("\n") if l and "vless-proxy-hk\|vless-proxy-jp\|vless-proxy-sg\|vless-proxy-tw\|vless-proxy-kr" not in l]
+
+          # 过滤掉旧的 CF 亚洲节点
+          lines = [l for l in lines if not any(w in l for w in [
+            "vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr",
+            "香港-CF","日本-CF","新加坡-CF","台湾-CF","韩国-CF"
+          ])]
+
+          all_nodes = lines + new_nodes
+          new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
+
+          # 上传到 CF Pages KV
+          kv_ns = "5d8ac1de6ceb4b9f817c5c335fba1576"
+          r2 = subprocess.run([
+            "curl", "-s", "-X", "PUT",
+            f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/storage/kv/namespaces/{kv_ns}/values/sub",
+            "-H", f"Authorization: Bearer {CF_TOKEN}",
+            "-H", "Content-Type: text/plain",
+            "--data", new_b64
+          ], capture_output=True, text=True)
+          print("KV写入:", r2.stdout[:100])
+
+          # 同时写本地文件供 pages deploy
+          import os
+          os.makedirs("pages_sub", exist_ok=True)
+          with open("pages_sub/sub", "w") as f:
+            f.write(new_b64)
+          print(f"总节点数: {len(all_nodes)}")
+          EOF
+
+      - name: 部署订阅到 CF Pages
+        env:
+          CLOUDFLARE_API_TOKEN: cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35
+        run: |
+          npx wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -3
