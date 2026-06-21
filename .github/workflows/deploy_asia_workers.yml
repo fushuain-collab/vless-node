@@ -122,8 +122,7 @@ jobs:
           UUID: ${{ secrets.UUID }}
         run: |
           python3 << 'EOF'
-          import base64, os
-          from urllib.request import urlopen
+          import base64, os, urllib.request
 
           UUID = os.environ["UUID"]
           regions = [
@@ -142,12 +141,25 @@ jobs:
             new_nodes.append(vless)
             print(f"✅ {name}: {host}")
 
-          existing = urlopen("https://vless-sub-bb7.pages.dev/sub").read()
-          decoded = base64.b64decode(existing).decode("utf-8", errors="ignore")
-          lines = [l for l in decoded.split("\n") if l.startswith("vless://") and "vless-cf-" not in l]
-          all_nodes = lines + new_nodes
+          # 读取现有订阅（失败时只用新节点）
+          old_nodes = []
+          try:
+            req = urllib.request.Request(
+              "https://vless-sub-bb7.pages.dev/sub",
+              headers={"User-Agent": "clash/1.18.0"}
+            )
+            raw = urllib.request.urlopen(req, timeout=10).read()
+            decoded = base64.b64decode(raw).decode("utf-8", errors="ignore")
+            old_nodes = [l for l in decoded.split("\n") if l.startswith("vless://") and "vless-cf-" not in l]
+            print(f"读取到旧节点: {len(old_nodes)}")
+          except Exception as e:
+            print(f"读取旧订阅失败(忽略): {e}")
+
+          all_nodes = old_nodes + new_nodes
           new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
 
+          import os as _os
+          _os.makedirs("pages_sub", exist_ok=True)
           with open("pages_sub/sub", "w") as f:
             f.write(new_b64)
           print(f"总节点数: {len(all_nodes)}")
