@@ -10,221 +10,131 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 295
     steps:
-      - name: 部署香港节点
+      - name: 部署节点
         run: |
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
           CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
           PORT=8083
-          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇭🇰香港-GitHub-3'))")
+          NODE_NAME="🇭🇰香港-GitHub-3"
 
-          # 下载 xray (arm64 for ubuntu-latest)
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
+          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
 
-          # 写 xray 配置
-          cat > config.json << 'CONF'
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          cat > config.json << CONF
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
-          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
-          cat config.json | python3 -c "import sys,json; json.load(sys.stdin); print('config OK')"
 
-          ./xray run -c config.json &
-          sleep 3
+          nohup ./xray run -c config.json &
+          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
+          sleep 15
+          HOST=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1 | sed 's|https://||')
+          echo "隧道: $HOST"
+          [ -z "$HOST" ] && cat tunnel.log && exit 1
 
-          # 用 serveo.net SSH 反向代理暴露端口（GH Actions 原生支持 SSH）
-          ssh -o StrictHostKeyChecking=no \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=9999 \
-              -R 0:localhost:$PORT \
-              serveo.net > serveo.log 2>&1 &
-          sleep 10
+          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
 
-          cat serveo.log
-          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
-          echo "Serveo URL: $SERVEO_URL"
-
-          if [ -z "$SERVEO_URL" ]; then
-            echo "serveo 失败，尝试 localhost.run..."
-            ssh -o StrictHostKeyChecking=no \
-                -o ServerAliveInterval=30 \
-                -R 0:localhost:$PORT \
-                nokey@localhost.run > lhr.log 2>&1 &
-            sleep 10
-            cat lhr.log
-            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
-            echo "localhost.run URL: $SERVEO_URL"
-          fi
-
-          if [ -z "$SERVEO_URL" ]; then
-            echo "穿透全部失败，退出"
-            exit 1
-          fi
-
-          # 解析 host 和 port
-          if [[ "$SERVEO_URL" == *:* ]]; then
-            HOST=$(echo $SERVEO_URL | cut -d: -f1)
-            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
-          else
-            HOST="$SERVEO_URL"
-            TPORT=443
-          fi
-
-          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
-          echo "节点: $VLESS"
-
-          # 写入 CF KV
-          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_3" \
-            -H "Authorization: Bearer ${CF_TOKEN}" \
-            -H "Content-Type: text/plain" --data "$VLESS"
-
-          # 更新订阅
-          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null)
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d)
           CLEANED=$(echo "$EXISTING" | grep -v "GitHub-3")
-          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | grep -v '^$' | base64 -w 0)
-          mkdir -p pages_sub
-          echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
-          npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
-            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "✅ 香港节点已上线: $VLESS"
+          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | base64 -w 0)
 
-          sleep 17400
+          mkdir -p pages_sub
+          echo "$COMBINED" > pages_sub/sub
+          echo "ok" > pages_sub/index.html
+
+          npm install -g wrangler --silent 2>/dev/null
+          CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+
+          echo "✅ $VLESS"
+          sleep 17100
 
   nrt:
     runs-on: ubuntu-latest
     timeout-minutes: 295
     steps:
-      - name: 部署日本节点
+      - name: 部署节点
         run: |
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
-          CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
           PORT=8084
-          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇯🇵日本-GitHub-4'))")
+          NODE_NAME="🇯🇵日本-GitHub-4"
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
+          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
 
-          cat > config.json << 'CONF'
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          cat > config.json << CONF
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
-          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
 
-          ./xray run -c config.json &
-          sleep 3
+          nohup ./xray run -c config.json &
+          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
+          sleep 15
+          HOST=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1 | sed 's|https://||')
+          echo "隧道: $HOST"
+          [ -z "$HOST" ] && cat tunnel.log && exit 1
 
-          ssh -o StrictHostKeyChecking=no \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=9999 \
-              -R 0:localhost:$PORT \
-              serveo.net > serveo.log 2>&1 &
-          sleep 10
-          cat serveo.log
+          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
 
-          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
-
-          if [ -z "$SERVEO_URL" ]; then
-            ssh -o StrictHostKeyChecking=no \
-                -o ServerAliveInterval=30 \
-                -R 0:localhost:$PORT \
-                nokey@localhost.run > lhr.log 2>&1 &
-            sleep 10
-            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
-          fi
-
-          [ -z "$SERVEO_URL" ] && exit 1
-
-          if [[ "$SERVEO_URL" == *:* ]]; then
-            HOST=$(echo $SERVEO_URL | cut -d: -f1)
-            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
-          else
-            HOST="$SERVEO_URL"; TPORT=443
-          fi
-
-          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
-
-          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_4" \
-            -H "Authorization: Bearer ${CF_TOKEN}" \
-            -H "Content-Type: text/plain" --data "$VLESS"
-
-          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null)
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d)
           CLEANED=$(echo "$EXISTING" | grep -v "GitHub-4")
-          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | grep -v '^$' | base64 -w 0)
-          mkdir -p pages_sub
-          echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
-          npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
-            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "✅ 日本节点已上线"
+          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | base64 -w 0)
 
-          sleep 17400
+          mkdir -p pages_sub
+          echo "$COMBINED" > pages_sub/sub
+          echo "ok" > pages_sub/index.html
+
+          npm install -g wrangler --silent 2>/dev/null
+          CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+
+          echo "✅ $VLESS"
+          sleep 17100
 
   sin:
     runs-on: ubuntu-latest
     timeout-minutes: 295
     steps:
-      - name: 部署新加坡节点
+      - name: 部署节点
         run: |
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
-          CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
           PORT=8085
-          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇸🇬新加坡-GitHub-5'))")
+          NODE_NAME="🇸🇬新加坡-GitHub-5"
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
+          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
 
-          cat > config.json << 'CONF'
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          cat > config.json << CONF
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
-          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
 
-          ./xray run -c config.json &
-          sleep 3
+          nohup ./xray run -c config.json &
+          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
+          sleep 15
+          HOST=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1 | sed 's|https://||')
+          echo "隧道: $HOST"
+          [ -z "$HOST" ] && cat tunnel.log && exit 1
 
-          ssh -o StrictHostKeyChecking=no \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=9999 \
-              -R 0:localhost:$PORT \
-              serveo.net > serveo.log 2>&1 &
-          sleep 10
-          cat serveo.log
+          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
 
-          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
-
-          if [ -z "$SERVEO_URL" ]; then
-            ssh -o StrictHostKeyChecking=no \
-                -o ServerAliveInterval=30 \
-                -R 0:localhost:$PORT \
-                nokey@localhost.run > lhr.log 2>&1 &
-            sleep 10
-            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
-          fi
-
-          [ -z "$SERVEO_URL" ] && exit 1
-
-          if [[ "$SERVEO_URL" == *:* ]]; then
-            HOST=$(echo $SERVEO_URL | cut -d: -f1)
-            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
-          else
-            HOST="$SERVEO_URL"; TPORT=443
-          fi
-
-          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
-
-          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_5" \
-            -H "Authorization: Bearer ${CF_TOKEN}" \
-            -H "Content-Type: text/plain" --data "$VLESS"
-
-          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null)
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d)
           CLEANED=$(echo "$EXISTING" | grep -v "GitHub-5")
-          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | grep -v '^$' | base64 -w 0)
-          mkdir -p pages_sub
-          echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
-          npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
-            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "✅ 新加坡节点已上线"
+          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | base64 -w 0)
 
-          sleep 17400
+          mkdir -p pages_sub
+          echo "$COMBINED" > pages_sub/sub
+          echo "ok" > pages_sub/index.html
+
+          npm install -g wrangler --silent 2>/dev/null
+          CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+
+          echo "✅ $VLESS"
+          sleep 17100
