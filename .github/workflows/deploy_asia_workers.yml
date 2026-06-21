@@ -12,21 +12,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 部署亚洲Workers并更新订阅
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
+          UUID: ${{ secrets.UUID }}
         run: |
-          python3 << 'PYEOF'
-          import subprocess, json, base64, re
+          python3 - << 'EOF'
+          import subprocess, json, base64, os
           from urllib.parse import quote
 
-          CF_KEY = "${{ secrets.CF_TOKEN }}"
-          CF_EMAIL = "${{ secrets.CF_EMAIL }}"
-          CF_ACCOUNT = "${{ secrets.CF_ACCOUNT }}"
-          UUID = "${{ secrets.UUID }}"
-
-          headers_key = [
-            "-H", f"X-Auth-Email: {CF_EMAIL}",
-            "-H", f"X-Auth-Key: {CF_KEY}",
-            "-H", "Content-Type: application/javascript"
-          ]
+          CF_TOKEN = os.environ["CF_TOKEN"]
+          CF_ACCOUNT = os.environ["CF_ACCOUNT"]
+          UUID = os.environ["UUID"]
 
           regions = [
             ("vless-proxy-hk", "workers/worker-hk.js", "🇭🇰香港-CF"),
@@ -36,71 +33,65 @@ jobs:
             ("vless-proxy-kr", "workers/worker-kr.js", "🇰🇷韩国-CF"),
           ]
 
+          # 获取 workers.dev subdomain
+          r = subprocess.run([
+            "curl", "-s",
+            f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/subdomain",
+            "-H", f"Authorization: Bearer {CF_TOKEN}"
+          ], capture_output=True, text=True)
+          subdomain = json.loads(r.stdout).get("result", {}).get("subdomain", "")
+          print(f"subdomain: {subdomain}")
+
           new_nodes = []
           for worker, jsfile, name in regions:
-            # 上传 worker 脚本
-            r = subprocess.run(
-              ["curl", "-s", "-X", "PUT",
-               f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}",
-               "-H", f"X-Auth-Email: {CF_EMAIL}",
-               "-H", f"X-Auth-Key: {CF_KEY}",
-               "-H", "Content-Type: application/javascript",
-               "--data-binary", f"@{jsfile}"],
-              capture_output=True, text=True
-            )
+            r = subprocess.run([
+              "curl", "-s", "-X", "PUT",
+              f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}",
+              "-H", f"Authorization: Bearer {CF_TOKEN}",
+              "-H", "Content-Type: application/javascript",
+              "--data-binary", f"@{jsfile}"
+            ], capture_output=True, text=True)
             result = json.loads(r.stdout)
             if result.get("success"):
-              print(f"✅ {name} 部署成功")
-              host = f"{worker}.{CF_ACCOUNT[:8]}.workers.dev"
-              # workers.dev 格式: scriptname.accountsubdomain.workers.dev
-              # 实际需要先开启 workers.dev 路由
-              r2 = subprocess.run(
-                ["curl", "-s", "-X", "POST",
-                 f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}/subdomain",
-                 "-H", f"X-Auth-Email: {CF_EMAIL}",
-                 "-H", f"X-Auth-Key: {CF_KEY}",
-                 "-H", "Content-Type: application/json",
-                 "-d", '{"enabled": true}'],
-                capture_output=True, text=True
-              )
-              # 查真实 subdomain
-              r3 = subprocess.run(
-                ["curl", "-s",
-                 f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/subdomain",
-                 "-H", f"X-Auth-Email: {CF_EMAIL}",
-                 "-H", f"X-Auth-Key: {CF_KEY}"],
-                capture_output=True, text=True
-              )
-              sub = json.loads(r3.stdout).get("result", {}).get("subdomain", "")
-              host = f"{worker}.{sub}.workers.dev"
+              # 开启 workers.dev 路由
+              subprocess.run([
+                "curl", "-s", "-X", "POST",
+                f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}/subdomain",
+                "-H", f"Authorization: Bearer {CF_TOKEN}",
+                "-H", "Content-Type: application/json",
+                "-d", '{"enabled":true}'
+              ], capture_output=True)
+              host = f"{worker}.{subdomain}.workers.dev"
               tag = quote(name)
               vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{tag}"
               new_nodes.append(vless)
-              print(f"   URL: {host}")
+              print(f"✅ {name}: {host}")
             else:
               print(f"❌ {name}: {result.get('errors')}")
 
           if not new_nodes:
-            print("没有成功部署的节点，退出")
+            print("所有节点部署失败")
             exit(1)
 
           # 合并订阅
           r = subprocess.run(["curl", "-s", "https://vless-sub-bb7.pages.dev/sub"], capture_output=True, text=True)
-          existing = base64.b64decode(r.stdout.strip()).decode("utf-8", errors="ignore")
-          lines = [l for l in existing.strip().split("\n") if l and not any(
-            w in l for w in ["vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr"]
-          )]
+          try:
+            existing = base64.b64decode(r.stdout.strip()).decode("utf-8", errors="ignore")
+            lines = [l for l in existing.strip().split("\n") if l and not any(
+              w in l for w in ["vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr"]
+            )]
+          except:
+            lines = []
           all_nodes = lines + new_nodes
           new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
 
-          import os
           os.makedirs("pages_sub", exist_ok=True)
           with open("pages_sub/sub", "w") as f:
             f.write(new_b64)
           print(f"总节点数: {len(all_nodes)}")
-          PYEOF
+          EOF
 
-      - name: 部署订阅
+      - name: 部署订阅到CF Pages
         env:
-          CLOUDFLARE_API_TOKEN: cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
         run: npx wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -3
