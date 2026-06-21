@@ -18,42 +18,59 @@ jobs:
           PORT=8083
           NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇭🇰香港-GitHub-3'))")
 
-          # 下载 xray
+          # 下载 xray (arm64 for ubuntu-latest)
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
 
-          # 下载 bore
-          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/latest/download/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz \
-            || wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
-          tar -xzf bore.tar.gz && chmod +x bore
-
-          # 写 xray 配置（vmess websocket）
-          cat > config.json << CONF
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          # 写 xray 配置
+          cat > config.json << 'CONF'
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
+          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
+          cat config.json | python3 -c "import sys,json; json.load(sys.stdin); print('config OK')"
 
           ./xray run -c config.json &
           sleep 3
 
-          # bore 穿透，把本地 PORT 暴露到 bore.pub
-          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
-          sleep 8
+          # 用 serveo.net SSH 反向代理暴露端口（GH Actions 原生支持 SSH）
+          ssh -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=9999 \
+              -R 0:localhost:$PORT \
+              serveo.net > serveo.log 2>&1 &
+          sleep 10
 
-          # 从 bore 日志拿到分配的端口
-          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
-          echo "Bore port: $BORE_PORT"
+          cat serveo.log
+          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
+          echo "Serveo URL: $SERVEO_URL"
 
-          if [ -z "$BORE_PORT" ]; then
-            echo "bore 连接失败，日志:"
-            cat bore.log
+          if [ -z "$SERVEO_URL" ]; then
+            echo "serveo 失败，尝试 localhost.run..."
+            ssh -o StrictHostKeyChecking=no \
+                -o ServerAliveInterval=30 \
+                -R 0:localhost:$PORT \
+                nokey@localhost.run > lhr.log 2>&1 &
+            sleep 10
+            cat lhr.log
+            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
+            echo "localhost.run URL: $SERVEO_URL"
+          fi
+
+          if [ -z "$SERVEO_URL" ]; then
+            echo "穿透全部失败，退出"
             exit 1
           fi
 
-          HOST="bore.pub"
-          # bore 是 TCP，用 vmess+ws 不行，改用直接连接
-          # vless 走 bore TCP 直连（非 TLS，用 none）
-          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
+          # 解析 host 和 port
+          if [[ "$SERVEO_URL" == *:* ]]; then
+            HOST=$(echo $SERVEO_URL | cut -d: -f1)
+            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
+          else
+            HOST="$SERVEO_URL"
+            TPORT=443
+          fi
 
+          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
           echo "节点: $VLESS"
 
           # 写入 CF KV
@@ -70,7 +87,7 @@ jobs:
           npm install -g wrangler --silent 2>/dev/null
           CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
             --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "✅ 香港节点已上线"
+          echo "✅ 香港节点已上线: $VLESS"
 
           sleep 17400
 
@@ -88,27 +105,44 @@ jobs:
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
-          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
-          tar -xzf bore.tar.gz && chmod +x bore
 
-          cat > config.json << CONF
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          cat > config.json << 'CONF'
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
+          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
 
           ./xray run -c config.json &
           sleep 3
-          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
-          sleep 8
 
-          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
-          echo "Bore port: $BORE_PORT"
+          ssh -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=9999 \
+              -R 0:localhost:$PORT \
+              serveo.net > serveo.log 2>&1 &
+          sleep 10
+          cat serveo.log
 
-          if [ -z "$BORE_PORT" ]; then
-            cat bore.log; exit 1
+          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
+
+          if [ -z "$SERVEO_URL" ]; then
+            ssh -o StrictHostKeyChecking=no \
+                -o ServerAliveInterval=30 \
+                -R 0:localhost:$PORT \
+                nokey@localhost.run > lhr.log 2>&1 &
+            sleep 10
+            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
           fi
 
-          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
-          echo "节点: $VLESS"
+          [ -z "$SERVEO_URL" ] && exit 1
+
+          if [[ "$SERVEO_URL" == *:* ]]; then
+            HOST=$(echo $SERVEO_URL | cut -d: -f1)
+            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
+          else
+            HOST="$SERVEO_URL"; TPORT=443
+          fi
+
+          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
 
           curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_4" \
             -H "Authorization: Bearer ${CF_TOKEN}" \
@@ -140,27 +174,44 @@ jobs:
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
-          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
-          tar -xzf bore.tar.gz && chmod +x bore
 
-          cat > config.json << CONF
-          {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
+          cat > config.json << 'CONF'
+          {"log":{"loglevel":"warning"},"inbounds":[{"port":PORT_PLACEHOLDER,"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"UUID_PLACEHOLDER","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
+          sed -i "s/PORT_PLACEHOLDER/$PORT/g; s/UUID_PLACEHOLDER/$UUID/g" config.json
 
           ./xray run -c config.json &
           sleep 3
-          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
-          sleep 8
 
-          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
-          echo "Bore port: $BORE_PORT"
+          ssh -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=9999 \
+              -R 0:localhost:$PORT \
+              serveo.net > serveo.log 2>&1 &
+          sleep 10
+          cat serveo.log
 
-          if [ -z "$BORE_PORT" ]; then
-            cat bore.log; exit 1
+          SERVEO_URL=$(grep -oP 'Forwarding TCP connections from \K\S+' serveo.log | head -1)
+
+          if [ -z "$SERVEO_URL" ]; then
+            ssh -o StrictHostKeyChecking=no \
+                -o ServerAliveInterval=30 \
+                -R 0:localhost:$PORT \
+                nokey@localhost.run > lhr.log 2>&1 &
+            sleep 10
+            SERVEO_URL=$(grep -oP 'tunneled.*\K[a-z0-9-]+\.lhrtunnel\.link' lhr.log | head -1)
           fi
 
-          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
-          echo "节点: $VLESS"
+          [ -z "$SERVEO_URL" ] && exit 1
+
+          if [[ "$SERVEO_URL" == *:* ]]; then
+            HOST=$(echo $SERVEO_URL | cut -d: -f1)
+            TPORT=$(echo $SERVEO_URL | cut -d: -f2)
+          else
+            HOST="$SERVEO_URL"; TPORT=443
+          fi
+
+          VLESS="vless://${UUID}@${HOST}:${TPORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
 
           curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_5" \
             -H "Authorization: Bearer ${CF_TOKEN}" \
