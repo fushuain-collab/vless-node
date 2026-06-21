@@ -11,90 +11,63 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 部署亚洲Workers并更新订阅
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 部署亚洲区 Pages 并更新订阅
         env:
           CF_TOKEN: ${{ secrets.CF_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
           UUID: ${{ secrets.UUID }}
         run: |
-          python3 - << 'EOF'
-          import subprocess, json, base64, os
-          from urllib.parse import quote
+          npm install -g wrangler
 
-          CF_TOKEN = os.environ["CF_TOKEN"]
-          CF_ACCOUNT = os.environ["CF_ACCOUNT"]
-          UUID = os.environ["UUID"]
+          REGIONS="hk:hk.xn--mesv7f5toqlp.tk:🇭🇰香港-CF jp:jp.xn--mesv7f5toqlp.tk:🇯🇵日本-CF sg:sg.xn--mesv7f5toqlp.tk:🇸🇬新加坡-CF tw:tw.xn--mesv7f5toqlp.tk:🇨🇳台湾-CF kr:cdn-all.xn--b6gac.eu.org:🇰🇷韩国-CF de:de.xn--mesv7f5toqlp.tk:🇩🇪德国-CF uk:uk.xn--mesv7f5toqlp.tk:🇬🇧英国-CF fr:fr.xn--mesv7f5toqlp.tk:🇫🇷法国-CF nl:nl.xn--mesv7f5toqlp.tk:🇳🇱荷兰-CF au:au.xn--mesv7f5toqlp.tk:🇦🇺澳大利亚-CF br:br.xn--mesv7f5toqlp.tk:🇧🇷巴西-CF in:in.xn--mesv7f5toqlp.tk:🇮🇳印度-CF us:bestproxy.onecf.eu.org:🇺🇸美国西海岸-CF ca:ts.hpc.tw:🇨🇦加拿大-CF"
 
-          regions = [
-            ("vless-proxy-hk", "workers/worker-hk.js", "🇭🇰香港-CF"),
-            ("vless-proxy-jp", "workers/worker-jp.js", "🇯🇵日本-CF"),
-            ("vless-proxy-sg", "workers/worker-sg.js", "🇸🇬新加坡-CF"),
-            ("vless-proxy-tw", "workers/worker-tw.js", "🇨🇳台湾-CF"),
-            ("vless-proxy-kr", "workers/worker-kr.js", "🇰🇷韩国-CF"),
-          ]
+          ALL_NODES=""
+          for item in $REGIONS; do
+            CODE=$(echo $item | cut -d: -f1)
+            PROXY=$(echo $item | cut -d: -f2)
+            NAME=$(echo $item | cut -d: -f3)
+            PROJECT="vless-cf-${CODE}"
+            DIR="/tmp/pages-${CODE}"
 
-          # 获取 workers.dev subdomain
-          r = subprocess.run([
-            "curl", "-s",
-            f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/subdomain",
-            "-H", f"Authorization: Bearer {CF_TOKEN}"
-          ], capture_output=True, text=True)
-          subdomain = json.loads(r.stdout).get("result", {}).get("subdomain", "")
-          print(f"subdomain: {subdomain}")
+            mkdir -p "$DIR"
+            # 把 UUID 和 proxyIP 硬编码进 js，环境变量方式
+            sed "s/let userID = '[^']*'/let userID = '${UUID}'/; s/let proxyIP = '[^']*'/let proxyIP = '${PROXY}'/" workers/worker-${CODE}.js > "$DIR/_worker.js"
 
-          new_nodes = []
-          for worker, jsfile, name in regions:
-            # modules 格式上传（支持 import 语句）
-            metadata = '{"main_module":"index.js"}'
-            r = subprocess.run([
-              "curl", "-s", "-X", "PUT",
-              f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}",
-              "-H", f"Authorization: Bearer {CF_TOKEN}",
-              "-H", "Content-Type: multipart/form-data",
-              "-F", f"metadata={metadata};type=application/json",
-              "-F", f"index.js=@{jsfile};filename=index.js;type=application/javascript+module"
-            ], capture_output=True, text=True)
-            result = json.loads(r.stdout)
-            if result.get("success"):
-              # 开启 workers.dev 路由
-              subprocess.run([
-                "curl", "-s", "-X", "POST",
-                f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}/subdomain",
-                "-H", f"Authorization: Bearer {CF_TOKEN}",
-                "-H", "Content-Type: application/json",
-                "-d", '{"enabled":true}'
-              ], capture_output=True)
-              host = f"{worker}.{subdomain}.workers.dev"
-              tag = quote(name)
-              vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{tag}"
-              new_nodes.append(vless)
-              print(f"✅ {name}: {host}")
-            else:
-              print(f"❌ {name}: {result.get('errors')}")
+            RESULT=$(CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy "$DIR" \
+              --project-name="$PROJECT" \
+              --branch=main 2>&1)
 
-          if not new_nodes:
-            print("所有节点部署失败")
-            exit(1)
+            if echo "$RESULT" | grep -q "Deployment complete"; then
+              HOST="${PROJECT}.pages.dev"
+              # 尝试从输出中提取实际域名
+              ACTUAL=$(echo "$RESULT" | grep -oP 'https://[a-z0-9-]+\.pages\.dev' | tail -1 | sed 's|https://||')
+              [ -n "$ACTUAL" ] && HOST="$ACTUAL"
+              VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&host=${HOST}&sni=${HOST}&path=%2Fvless&encryption=none#$(python3 -c "from urllib.parse import quote; print(quote('${NAME}'))")"
+              ALL_NODES="${ALL_NODES}${VLESS}\n"
+              echo "✅ ${NAME}: ${HOST}"
+            else
+              echo "❌ ${NAME}: $(echo "$RESULT" | tail -3)"
+            fi
+          done
 
-          # 合并订阅
-          r = subprocess.run(["curl", "-s", "https://vless-sub-bb7.pages.dev/sub"], capture_output=True, text=True)
-          try:
-            existing = base64.b64decode(r.stdout.strip()).decode("utf-8", errors="ignore")
-            lines = [l for l in existing.strip().split("\n") if l and not any(
-              w in l for w in ["vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr"]
-            )]
-          except:
-            lines = []
-          all_nodes = lines + new_nodes
-          new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
+          if [ -z "$ALL_NODES" ]; then
+            echo "所有节点部署失败"; exit 1
+          fi
 
-          os.makedirs("pages_sub", exist_ok=True)
-          with open("pages_sub/sub", "w") as f:
-            f.write(new_b64)
-          print(f"总节点数: {len(all_nodes)}")
-          EOF
+          # 合并进现有订阅
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null || echo "")
+          # 去掉旧的 CF 节点（hk/jp/sg等），保留 CloudflareIP 和 GitHub 节点
+          CLEANED=$(echo "$EXISTING" | grep -v "vless-cf-\|CF$" || echo "$EXISTING")
+          NEW_NODES=$(printf "$ALL_NODES")
+          ALL=$(printf "%s\n%s" "$CLEANED" "$NEW_NODES" | grep "^vless://" | sort -u)
+          NEW_B64=$(echo "$ALL" | base64 -w0)
 
-      - name: 部署订阅到CF Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
-        run: npx wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -3
+          echo "$NEW_B64" > pages_sub/sub
+          CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy pages_sub \
+            --project-name=vless-sub \
+            --branch=main 2>&1 | tail -3
+          echo "总节点数: $(echo "$ALL" | grep -c "vless://")"
