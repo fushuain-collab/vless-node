@@ -3,8 +3,7 @@ name: Deploy Asia Workers
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'workers/**'
+    paths: ['workers/**']
 
 jobs:
   deploy:
@@ -12,108 +11,96 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: 部署5个亚洲区 Workers
-        env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CF_TOKEN }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL }}
-          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
-          UUID: ${{ secrets.UUID }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 部署亚洲Workers并更新订阅
         run: |
-          npm install -g wrangler
-
-          deploy_worker() {
-            local CODE=$1 PROXY=$2 NAME=$3
-            cat > wrangler-${CODE}.toml << EOF
-          name = "vless-proxy-${CODE}"
-          main = "workers/worker-${CODE}.js"
-          compatibility_date = "2024-11-27"
-          compatibility_flags = ["nodejs_compat"]
-          EOF
-            echo "=== 部署 $NAME ==="
-            wrangler deploy --config wrangler-${CODE}.toml 2>&1 | grep -E "Deployed|workers.dev|Error|error" || true
-          }
-
-          deploy_worker hk "hk.xn--mesv7f5toqlp.tk"  "🇭🇰香港-CF"
-          deploy_worker jp "jp.xn--mesv7f5toqlp.tk"  "🇯🇵日本-CF"
-          deploy_worker sg "sg.xn--mesv7f5toqlp.tk"  "🇸🇬新加坡-CF"
-          deploy_worker tw "tw.xn--mesv7f5toqlp.tk"  "🇨🇳台湾-CF"
-          deploy_worker kr "cdn-all.xn--b6gac.eu.org" "🇰🇷韩国-CF"
-
-      - name: 把5个节点写入订阅
-        env:
-          CF_TOKEN_BEARER: cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35
-          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
-          UUID: ${{ secrets.UUID }}
-        run: |
-          python3 << 'EOF'
-          import subprocess, json, base64
+          python3 << 'PYEOF'
+          import subprocess, json, base64, re
           from urllib.parse import quote
 
-          CF_TOKEN = "cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35"
-          CF_ACCOUNT = "2a59ea0bbb2b91a2c98768cff534bec3"
-          UUID = subprocess.check_output("echo $UUID", shell=True, env=__import__('os').environ).decode().strip()
+          CF_KEY = "${{ secrets.CF_TOKEN }}"
+          CF_EMAIL = "${{ secrets.CF_EMAIL }}"
+          CF_ACCOUNT = "${{ secrets.CF_ACCOUNT }}"
+          UUID = "${{ secrets.UUID }}"
+
+          headers_key = [
+            "-H", f"X-Auth-Email: {CF_EMAIL}",
+            "-H", f"X-Auth-Key: {CF_KEY}",
+            "-H", "Content-Type: application/javascript"
+          ]
 
           regions = [
-            ("vless-proxy-hk", "🇭🇰香港-CF"),
-            ("vless-proxy-jp", "🇯🇵日本-CF"),
-            ("vless-proxy-sg", "🇸🇬新加坡-CF"),
-            ("vless-proxy-tw", "🇨🇳台湾-CF"),
-            ("vless-proxy-kr", "🇰🇷韩国-CF"),
+            ("vless-proxy-hk", "workers/worker-hk.js", "🇭🇰香港-CF"),
+            ("vless-proxy-jp", "workers/worker-jp.js", "🇯🇵日本-CF"),
+            ("vless-proxy-sg", "workers/worker-sg.js", "🇸🇬新加坡-CF"),
+            ("vless-proxy-tw", "workers/worker-tw.js", "🇨🇳台湾-CF"),
+            ("vless-proxy-kr", "workers/worker-kr.js", "🇰🇷韩国-CF"),
           ]
 
           new_nodes = []
-          for worker, name in regions:
-            host = f"{worker}.{CF_ACCOUNT[:8].lower()}.workers.dev"
-            # 实际 workers.dev 域名格式
-            host = f"{worker}.fushuain-collab.workers.dev"
-            tag = quote(name)
-            vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{tag}"
-            new_nodes.append(vless)
-            print(f"✅ {name}: {host}")
+          for worker, jsfile, name in regions:
+            # 上传 worker 脚本
+            r = subprocess.run(
+              ["curl", "-s", "-X", "PUT",
+               f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}",
+               "-H", f"X-Auth-Email: {CF_EMAIL}",
+               "-H", f"X-Auth-Key: {CF_KEY}",
+               "-H", "Content-Type: application/javascript",
+               "--data-binary", f"@{jsfile}"],
+              capture_output=True, text=True
+            )
+            result = json.loads(r.stdout)
+            if result.get("success"):
+              print(f"✅ {name} 部署成功")
+              host = f"{worker}.{CF_ACCOUNT[:8]}.workers.dev"
+              # workers.dev 格式: scriptname.accountsubdomain.workers.dev
+              # 实际需要先开启 workers.dev 路由
+              r2 = subprocess.run(
+                ["curl", "-s", "-X", "POST",
+                 f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/scripts/{worker}/subdomain",
+                 "-H", f"X-Auth-Email: {CF_EMAIL}",
+                 "-H", f"X-Auth-Key: {CF_KEY}",
+                 "-H", "Content-Type: application/json",
+                 "-d", '{"enabled": true}'],
+                capture_output=True, text=True
+              )
+              # 查真实 subdomain
+              r3 = subprocess.run(
+                ["curl", "-s",
+                 f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/workers/subdomain",
+                 "-H", f"X-Auth-Email: {CF_EMAIL}",
+                 "-H", f"X-Auth-Key: {CF_KEY}"],
+                capture_output=True, text=True
+              )
+              sub = json.loads(r3.stdout).get("result", {}).get("subdomain", "")
+              host = f"{worker}.{sub}.workers.dev"
+              tag = quote(name)
+              vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{tag}"
+              new_nodes.append(vless)
+              print(f"   URL: {host}")
+            else:
+              print(f"❌ {name}: {result.get('errors')}")
 
-          # 拉取现有订阅
-          r = subprocess.run(
-            ["curl", "-s", "https://vless-sub-bb7.pages.dev/sub"],
-            capture_output=True, text=True
-          )
-          existing = base64.b64decode(r.stdout.strip()).decode("utf-8")
-          lines = [l for l in existing.strip().split("\n") if l and "vless-proxy-hk\|vless-proxy-jp\|vless-proxy-sg\|vless-proxy-tw\|vless-proxy-kr" not in l]
+          if not new_nodes:
+            print("没有成功部署的节点，退出")
+            exit(1)
 
-          # 过滤掉旧的 CF 亚洲节点
-          lines = [l for l in lines if not any(w in l for w in [
-            "vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr",
-            "香港-CF","日本-CF","新加坡-CF","台湾-CF","韩国-CF"
-          ])]
-
+          # 合并订阅
+          r = subprocess.run(["curl", "-s", "https://vless-sub-bb7.pages.dev/sub"], capture_output=True, text=True)
+          existing = base64.b64decode(r.stdout.strip()).decode("utf-8", errors="ignore")
+          lines = [l for l in existing.strip().split("\n") if l and not any(
+            w in l for w in ["vless-proxy-hk","vless-proxy-jp","vless-proxy-sg","vless-proxy-tw","vless-proxy-kr"]
+          )]
           all_nodes = lines + new_nodes
           new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
 
-          # 上传到 CF Pages KV
-          kv_ns = "5d8ac1de6ceb4b9f817c5c335fba1576"
-          r2 = subprocess.run([
-            "curl", "-s", "-X", "PUT",
-            f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/storage/kv/namespaces/{kv_ns}/values/sub",
-            "-H", f"Authorization: Bearer {CF_TOKEN}",
-            "-H", "Content-Type: text/plain",
-            "--data", new_b64
-          ], capture_output=True, text=True)
-          print("KV写入:", r2.stdout[:100])
-
-          # 同时写本地文件供 pages deploy
           import os
           os.makedirs("pages_sub", exist_ok=True)
           with open("pages_sub/sub", "w") as f:
             f.write(new_b64)
           print(f"总节点数: {len(all_nodes)}")
-          EOF
+          PYEOF
 
-      - name: 部署订阅到 CF Pages
+      - name: 部署订阅
         env:
           CLOUDFLARE_API_TOKEN: cfat_ehJLZHkTjqdVfmrRBvcS0FZDY5Xp5pHw8blkSRAofd964c35
-        run: |
-          npx wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -3
+        run: npx wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -3
