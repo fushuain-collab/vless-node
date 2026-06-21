@@ -52,7 +52,7 @@ jobs:
               "-H", f"Authorization: Bearer {CF_TOKEN}",
               "-H", "Content-Type: multipart/form-data",
               "-F", f"metadata={metadata};type=application/json",
-              "-F", f"worker.js=@{jsfile};type=application/javascript+module"
+              "-F", f"worker.js=@{jsfile};filename=worker.js;type=application/javascript+module"
             ], capture_output=True, text=True)
             result = json.loads(r.stdout)
             if result.get("success"):
