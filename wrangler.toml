@@ -1,3 +1,6 @@
 name = "vless-cf-proxy"
 main = "worker.js"
-compatibility_date = "2024-11-27"
+compatibility_date = "2026-06-17"
+
+[vars]
+UUID = "e0240134-0986-4b92-a230-fdc8d1200456"
