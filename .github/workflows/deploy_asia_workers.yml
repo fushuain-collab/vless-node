@@ -15,59 +15,141 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 部署亚洲区 Pages 并更新订阅
+      - name: 安装wrangler
+        run: npm install -g wrangler
+
+      - name: 部署香港
         env:
-          CF_TOKEN: ${{ secrets.CF_TOKEN }}
-          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-hk.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-hk --branch=main 2>&1 | tail -2
+
+      - name: 部署日本
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-jp.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-jp --branch=main 2>&1 | tail -2
+
+      - name: 部署新加坡
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-sg.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-sg --branch=main 2>&1 | tail -2
+
+      - name: 部署台湾
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-tw.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-tw --branch=main 2>&1 | tail -2
+
+      - name: 部署韩国
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-kr.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-kr --branch=main 2>&1 | tail -2
+
+      - name: 部署德国
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-de.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-de --branch=main 2>&1 | tail -2
+
+      - name: 部署英国
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-uk.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-uk --branch=main 2>&1 | tail -2
+
+      - name: 部署法国
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-fr.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-fr --branch=main 2>&1 | tail -2
+
+      - name: 部署荷兰
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-nl.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-nl --branch=main 2>&1 | tail -2
+
+      - name: 部署澳大利亚
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-au.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-au --branch=main 2>&1 | tail -2
+
+      - name: 部署巴西
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-br.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-br --branch=main 2>&1 | tail -2
+
+      - name: 部署印度
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-in.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-in --branch=main 2>&1 | tail -2
+
+      - name: 部署美国
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-us.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-us --branch=main 2>&1 | tail -2
+
+      - name: 部署加拿大
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
+        run: |
+          mkdir -p /tmp/p && cp workers/worker-ca.js /tmp/p/_worker.js
+          wrangler pages deploy /tmp/p --project-name=vless-cf-ca --branch=main 2>&1 | tail -2
+
+      - name: 更新订阅
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN }}
           UUID: ${{ secrets.UUID }}
         run: |
-          npm install -g wrangler
+          python3 << 'EOF'
+          import base64, os
+          from urllib.request import urlopen
 
-          REGIONS="hk:hk.xn--mesv7f5toqlp.tk:🇭🇰香港-CF jp:jp.xn--mesv7f5toqlp.tk:🇯🇵日本-CF sg:sg.xn--mesv7f5toqlp.tk:🇸🇬新加坡-CF tw:tw.xn--mesv7f5toqlp.tk:🇨🇳台湾-CF kr:cdn-all.xn--b6gac.eu.org:🇰🇷韩国-CF de:de.xn--mesv7f5toqlp.tk:🇩🇪德国-CF uk:uk.xn--mesv7f5toqlp.tk:🇬🇧英国-CF fr:fr.xn--mesv7f5toqlp.tk:🇫🇷法国-CF nl:nl.xn--mesv7f5toqlp.tk:🇳🇱荷兰-CF au:au.xn--mesv7f5toqlp.tk:🇦🇺澳大利亚-CF br:br.xn--mesv7f5toqlp.tk:🇧🇷巴西-CF in:in.xn--mesv7f5toqlp.tk:🇮🇳印度-CF us:bestproxy.onecf.eu.org:🇺🇸美国西海岸-CF ca:ts.hpc.tw:🇨🇦加拿大-CF"
+          UUID = os.environ["UUID"]
+          regions = [
+            ("hk","🇭🇰香港-CF"),("jp","🇯🇵日本-CF"),("sg","🇸🇬新加坡-CF"),
+            ("tw","🇨🇳台湾-CF"),("kr","🇰🇷韩国-CF"),("de","🇩🇪德国-CF"),
+            ("uk","🇬🇧英国-CF"),("fr","🇫🇷法国-CF"),("nl","🇳🇱荷兰-CF"),
+            ("au","🇦🇺澳大利亚-CF"),("br","🇧🇷巴西-CF"),("in","🇮🇳印度-CF"),
+            ("us","🇺🇸美国西-CF"),("ca","🇨🇦加拿大-CF"),
+          ]
 
-          ALL_NODES=""
-          for item in $REGIONS; do
-            CODE=$(echo $item | cut -d: -f1)
-            PROXY=$(echo $item | cut -d: -f2)
-            NAME=$(echo $item | cut -d: -f3)
-            PROJECT="vless-cf-${CODE}"
-            DIR="/tmp/pages-${CODE}"
+          from urllib.parse import quote
+          new_nodes = []
+          for code, name in regions:
+            host = f"vless-cf-{code}.pages.dev"
+            vless = f"vless://{UUID}@{host}:443?security=tls&type=ws&host={host}&sni={host}&path=%2Fvless&encryption=none#{quote(name)}"
+            new_nodes.append(vless)
+            print(f"✅ {name}: {host}")
 
-            mkdir -p "$DIR"
-            # 把 UUID 和 proxyIP 硬编码进 js，环境变量方式
-            sed "s/let userID = '[^']*'/let userID = '${UUID}'/; s/let proxyIP = '[^']*'/let proxyIP = '${PROXY}'/" workers/worker-${CODE}.js > "$DIR/_worker.js"
+          existing = urlopen("https://vless-sub-bb7.pages.dev/sub").read()
+          decoded = base64.b64decode(existing).decode("utf-8", errors="ignore")
+          lines = [l for l in decoded.split("\n") if l.startswith("vless://") and "vless-cf-" not in l]
+          all_nodes = lines + new_nodes
+          new_b64 = base64.b64encode("\n".join(all_nodes).encode()).decode()
 
-            RESULT=$(CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy "$DIR" \
-              --project-name="$PROJECT" \
-              --branch=main 2>&1)
-
-            if echo "$RESULT" | grep -q "Deployment complete"; then
-              HOST="${PROJECT}.pages.dev"
-              # 尝试从输出中提取实际域名
-              ACTUAL=$(echo "$RESULT" | grep -oP 'https://[a-z0-9-]+\.pages\.dev' | tail -1 | sed 's|https://||')
-              [ -n "$ACTUAL" ] && HOST="$ACTUAL"
-              VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&host=${HOST}&sni=${HOST}&path=%2Fvless&encryption=none#$(python3 -c "from urllib.parse import quote; print(quote('${NAME}'))")"
-              ALL_NODES="${ALL_NODES}${VLESS}\n"
-              echo "✅ ${NAME}: ${HOST}"
-            else
-              echo "❌ ${NAME}: $(echo "$RESULT" | tail -3)"
-            fi
-          done
-
-          if [ -z "$ALL_NODES" ]; then
-            echo "所有节点部署失败"; exit 1
-          fi
-
-          # 合并进现有订阅
-          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null || echo "")
-          # 去掉旧的 CF 节点（hk/jp/sg等），保留 CloudflareIP 和 GitHub 节点
-          CLEANED=$(echo "$EXISTING" | grep -v "vless-cf-\|CF$" || echo "$EXISTING")
-          NEW_NODES=$(printf "$ALL_NODES")
-          ALL=$(printf "%s\n%s" "$CLEANED" "$NEW_NODES" | grep "^vless://" | sort -u)
-          NEW_B64=$(echo "$ALL" | base64 -w0)
-
-          echo "$NEW_B64" > pages_sub/sub
-          CLOUDFLARE_API_TOKEN="$CF_TOKEN" wrangler pages deploy pages_sub \
-            --project-name=vless-sub \
-            --branch=main 2>&1 | tail -3
-          echo "总节点数: $(echo "$ALL" | grep -c "vless://")"
+          with open("pages_sub/sub", "w") as f:
+            f.write(new_b64)
+          print(f"总节点数: {len(all_nodes)}")
+          EOF
+          wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -2
