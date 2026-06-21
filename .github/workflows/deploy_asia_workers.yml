@@ -115,4 +115,5 @@ jobs:
             f.write(new_b64)
           print(f"总节点数: {len(all_nodes)}")
           EOF
-          wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1 | tail -2
+          echo "ok-$(date +%s)" > pages_sub/index.html
+          wrangler pages deploy pages_sub --project-name=vless-sub --branch=main 2>&1
