@@ -38,3 +38,6 @@ vless://e0240134-0986-4b92-a230-fdc8d1200456@188.114.101.1:443?security=tls&type
 vless://e0240134-0986-4b92-a230-fdc8d1200456@188.114.102.1:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#测试HKG-B3
 vless://e0240134-0986-4b92-a230-fdc8d1200456@188.114.103.1:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#测试HKG-B4
 vless://e0240134-0986-4b92-a230-fdc8d1200456@188.114.111.1:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#测试HKG-B5
+vless://e0240134-0986-4b92-a230-fdc8d1200456@198.41.135.129:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#移动优选-1
+vless://e0240134-0986-4b92-a230-fdc8d1200456@173.245.49.167:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#移动优选-2
+vless://e0240134-0986-4b92-a230-fdc8d1200456@172.67.228.196:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#移动优选-3
