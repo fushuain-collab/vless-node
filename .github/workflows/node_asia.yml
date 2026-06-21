@@ -15,31 +15,48 @@ jobs:
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
           CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
-          NODE_NAME="%F0%9F%87%AD%F0%9F%87%B0%E9%A6%99%E6%B8%AF-GitHub-3"
           PORT=8083
+          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇭🇰香港-GitHub-3'))")
 
-          # 下载工具
+          # 下载 xray
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
-          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          chmod +x cloudflared
 
-          # 写配置
+          # 下载 bore
+          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/latest/download/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz \
+            || wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
+          tar -xzf bore.tar.gz && chmod +x bore
+
+          # 写 xray 配置（vmess websocket）
           cat > config.json << CONF
           {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
 
-          # 启动
           ./xray run -c config.json &
-          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
-          sleep 15
+          sleep 3
 
-          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
-          echo "隧道: $TUNNEL_URL"
-          HOST="${TUNNEL_URL#https://}"
-          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
+          # bore 穿透，把本地 PORT 暴露到 bore.pub
+          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
+          sleep 8
 
-          # 写入 KV
+          # 从 bore 日志拿到分配的端口
+          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
+          echo "Bore port: $BORE_PORT"
+
+          if [ -z "$BORE_PORT" ]; then
+            echo "bore 连接失败，日志:"
+            cat bore.log
+            exit 1
+          fi
+
+          HOST="bore.pub"
+          # bore 是 TCP，用 vmess+ws 不行，改用直接连接
+          # vless 走 bore TCP 直连（非 TLS，用 none）
+          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
+
+          echo "节点: $VLESS"
+
+          # 写入 CF KV
           curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_3" \
             -H "Authorization: Bearer ${CF_TOKEN}" \
             -H "Content-Type: text/plain" --data "$VLESS"
@@ -51,8 +68,9 @@ jobs:
           mkdir -p pages_sub
           echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
           npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "OK: $VLESS"
+          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+          echo "✅ 香港节点已上线"
 
           sleep 17400
 
@@ -65,26 +83,32 @@ jobs:
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
           CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
-          NODE_NAME="%F0%9F%87%AF%F0%9F%87%B5%E6%97%A5%E6%9C%AC-GitHub-4"
           PORT=8084
+          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇯🇵日本-GitHub-4'))")
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
-          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          chmod +x cloudflared
+          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
+          tar -xzf bore.tar.gz && chmod +x bore
 
           cat > config.json << CONF
           {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
 
           ./xray run -c config.json &
-          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
-          sleep 15
+          sleep 3
+          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
+          sleep 8
 
-          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
-          echo "隧道: $TUNNEL_URL"
-          HOST="${TUNNEL_URL#https://}"
-          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
+          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
+          echo "Bore port: $BORE_PORT"
+
+          if [ -z "$BORE_PORT" ]; then
+            cat bore.log; exit 1
+          fi
+
+          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
+          echo "节点: $VLESS"
 
           curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_4" \
             -H "Authorization: Bearer ${CF_TOKEN}" \
@@ -96,8 +120,9 @@ jobs:
           mkdir -p pages_sub
           echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
           npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "OK: $VLESS"
+          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+          echo "✅ 日本节点已上线"
 
           sleep 17400
 
@@ -110,26 +135,32 @@ jobs:
           UUID="${{ secrets.UUID }}"
           CF_TOKEN="${{ secrets.CF_TOKEN }}"
           CF_ACCOUNT="${{ secrets.CF_ACCOUNT }}"
-          NODE_NAME="%F0%9F%87%B8%F0%9F%87%AC%E6%96%B0%E5%8A%A0%E5%9D%A1-GitHub-5"
           PORT=8085
+          NODE_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote('🇸🇬新加坡-GitHub-5'))")
 
           wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
           unzip -q xray.zip xray && chmod +x xray
-          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          chmod +x cloudflared
+          wget -q -O bore.tar.gz https://github.com/ekzhang/bore/releases/download/v0.5.0/bore-v0.5.0-x86_64-unknown-linux-musl.tar.gz
+          tar -xzf bore.tar.gz && chmod +x bore
 
           cat > config.json << CONF
           {"log":{"loglevel":"warning"},"inbounds":[{"port":${PORT},"listen":"127.0.0.1","protocol":"vless","settings":{"clients":[{"id":"${UUID}","level":0}],"decryption":"none"},"streamSettings":{"network":"ws","wsSettings":{"path":"/vless"}}}],"outbounds":[{"protocol":"freedom"}]}
           CONF
 
           ./xray run -c config.json &
-          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} --no-autoupdate > tunnel.log 2>&1 &
-          sleep 15
+          sleep 3
+          nohup ./bore local ${PORT} --to bore.pub > bore.log 2>&1 &
+          sleep 8
 
-          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
-          echo "隧道: $TUNNEL_URL"
-          HOST="${TUNNEL_URL#https://}"
-          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
+          BORE_PORT=$(grep -oP 'listening at bore\.pub:\K[0-9]+' bore.log | head -1)
+          echo "Bore port: $BORE_PORT"
+
+          if [ -z "$BORE_PORT" ]; then
+            cat bore.log; exit 1
+          fi
+
+          VLESS="vless://${UUID}@bore.pub:${BORE_PORT}?security=none&type=ws&path=%2Fvless&encryption=none#${NODE_NAME}"
+          echo "节点: $VLESS"
 
           curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_5" \
             -H "Authorization: Bearer ${CF_TOKEN}" \
@@ -141,7 +172,8 @@ jobs:
           mkdir -p pages_sub
           echo "$COMBINED" > pages_sub/sub && echo "ok" > pages_sub/index.html
           npm install -g wrangler --silent 2>/dev/null
-          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub --project-name="vless-sub" --branch="main" 2>&1 | tail -3
-          echo "OK: $VLESS"
+          CLOUDFLARE_API_TOKEN="${CF_TOKEN}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" --branch="main" 2>&1 | tail -3
+          echo "✅ 新加坡节点已上线"
 
           sleep 17400
