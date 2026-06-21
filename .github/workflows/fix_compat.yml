@@ -1,0 +1,20 @@
+name: Fix Worker Compat
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 给Workers加nodejs_compat
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CF_ACCOUNT }}
+        run: |
+          for region in hk jp sg tw kr; do
+            echo "=== vless-proxy-${region} ==="
+            curl -s -X PATCH \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/workers/scripts/vless-proxy-${region}/settings" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{"compatibility_flags":["nodejs_compat"],"compatibility_date":"2024-11-27"}' | python3 -c "import sys,json; r=json.loads(sys.stdin.read()); print('✅ OK' if r.get('success') else '❌ ' + str(r.get('errors')))"
+          done
