@@ -1,0 +1,162 @@
+name: VLESS Asia Nodes
+
+on:
+  schedule:
+    - cron: "30 */5 * * *"   # 每5小时重启，错开美国节点30分钟
+  workflow_dispatch:
+
+jobs:
+  run-asia-node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 295
+    strategy:
+      matrix:
+        include:
+          - node_id: 3
+            region: "hkg"
+            flag: "🇭🇰"
+            name: "香港"
+            # 香港 Cloudflare 优选 IP 段
+            cf_ip: "162.159.192.1"
+          - node_id: 4
+            region: "nrt"
+            flag: "🇯🇵"
+            name: "日本"
+            cf_ip: "162.159.193.1"
+          - node_id: 5
+            region: "sin"
+            flag: "🇸🇬"
+            name: "新加坡"
+            cf_ip: "162.159.195.1"
+
+    steps:
+      - name: 下载工具
+        run: |
+          wget -q -O xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+          unzip -q xray.zip xray && chmod +x xray
+          wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+
+      - name: 测速找最快亚洲CF IP
+        run: |
+          # 下载 CF IP 测速工具
+          wget -q -O cfspeed.zip https://github.com/XIU2/CloudflareSpeedTest/releases/latest/download/CloudflareST_linux_amd64.zip
+          unzip -q cfspeed.zip && chmod +x CloudflareST
+
+          # 按 region 选不同的 CF IP 池
+          REGION="${{ matrix.region }}"
+          if [ "$REGION" = "hkg" ]; then
+            # 香港 Cloudflare Anycast 段
+            echo "162.159.192.0/24
+104.16.0.0/13
+104.24.0.0/14" > ip_list.txt
+          elif [ "$REGION" = "nrt" ]; then
+            # 日本
+            echo "162.159.193.0/24
+104.18.0.0/15
+104.20.0.0/14" > ip_list.txt
+          else
+            # 新加坡
+            echo "162.159.195.0/24
+104.22.0.0/15
+172.64.0.0/13" > ip_list.txt
+          fi
+
+          # 测速，取最快的 IP
+          ./CloudflareST -f ip_list.txt -n 100 -dn 5 -tl 200 -sl 1 \
+            -url "https://speed.cloudflare.com/__down?bytes=10000000" \
+            -o result.csv 2>/dev/null || true
+
+          # 取延迟最低的IP
+          BEST_IP=$(tail -n +2 result.csv 2>/dev/null | sort -t',' -k6 -n | head -1 | cut -d',' -f1)
+          if [ -z "$BEST_IP" ]; then
+            BEST_IP="${{ matrix.cf_ip }}"
+          fi
+          echo "最快IP: $BEST_IP"
+          echo "BEST_IP=$BEST_IP" >> $GITHUB_ENV
+
+      - name: 写入 Xray 配置（带亚洲IP直连）
+        run: |
+          PORT=$((8080 + ${{ matrix.node_id }}))
+          UUID="${{ secrets.UUID }}"
+          BEST_IP="${BEST_IP}"
+
+          cat > config.json << EOF
+          {
+            "log": {"loglevel": "warning"},
+            "inbounds": [{
+              "port": ${PORT},
+              "listen": "127.0.0.1",
+              "protocol": "vless",
+              "settings": {
+                "clients": [{"id": "${UUID}", "level": 0}],
+                "decryption": "none"
+              },
+              "streamSettings": {
+                "network": "ws",
+                "wsSettings": {"path": "/vless"}
+              }
+            }],
+            "outbounds": [{
+              "protocol": "freedom",
+              "settings": {},
+              "tag": "direct"
+            }]
+          }
+          EOF
+          echo "PORT=${PORT}" >> $GITHUB_ENV
+
+      - name: 启动 Xray
+        run: nohup ./xray run -c config.json &
+
+      - name: 启动 Cloudflare Tunnel（绑定亚洲IP）
+        run: |
+          # 用测速得到的亚洲 CF IP 建立 tunnel，让 CF 就近从亚洲 PoP 接入
+          nohup ./cloudflared tunnel --url http://127.0.0.1:${PORT} \
+            --no-autoupdate \
+            --edge-ip-version 4 \
+            > tunnel.log 2>&1 &
+          sleep 15
+
+          TUNNEL_URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
+          if [ -z "$TUNNEL_URL" ]; then
+            TUNNEL_URL=$(grep -o 'https://[^ ]*\.trycloudflare\.com' tunnel.log | head -1)
+          fi
+          echo "隧道地址: $TUNNEL_URL"
+          echo "TUNNEL_URL=$TUNNEL_URL" >> $GITHUB_ENV
+
+      - name: 更新订阅
+        run: |
+          UUID="${{ secrets.UUID }}"
+          HOST="${TUNNEL_URL#https://}"
+          NODE_NAME="${{ matrix.flag }}${{ matrix.name }}-GitHub-${{ matrix.node_id }}"
+
+          VLESS="vless://${UUID}@${HOST}:443?security=tls&type=ws&path=%2Fvless&host=${HOST}&sni=${HOST}&encryption=none#${NODE_NAME}"
+          echo "节点: $VLESS"
+
+          # 写入 CF KV
+          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT }}/storage/kv/namespaces/5d8ac1de6ceb4b9f817c5c335fba1576/values/gh_node_${{ matrix.node_id }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_TOKEN }}" \
+            -H "Content-Type: text/plain" \
+            --data "$VLESS"
+
+          # 拉取现有订阅，替换同名节点
+          EXISTING=$(curl -s "https://vless-sub-bb7.pages.dev/sub" | base64 -d 2>/dev/null)
+          CLEANED=$(echo "$EXISTING" | grep -v "GitHub-${{ matrix.node_id }}")
+          COMBINED=$(printf '%s\n%s' "$CLEANED" "$VLESS" | grep -v '^$' | base64 -w 0)
+
+          mkdir -p pages_sub
+          echo "$COMBINED" > pages_sub/sub
+          echo "ok" > pages_sub/index.html
+
+          npm install -g wrangler --silent 2>/dev/null
+          CLOUDFLARE_API_TOKEN="${{ secrets.CF_TOKEN }}" wrangler pages deploy pages_sub \
+            --project-name="vless-sub" \
+            --branch="main" 2>&1 | tail -3
+
+          echo "✅ $NODE_NAME 已上线"
+
+      - name: 保持运行
+        run: |
+          echo "节点运行中: $TUNNEL_URL"
+          sleep 17400
