@@ -2,6 +2,9 @@ name: Deploy Asia Workers
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'workers/**'
 
 jobs:
   deploy:
