@@ -75,8 +75,3 @@ vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.2.17:443?security=tls&type=w
 vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.1.12:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#APAC-87
 vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.2.15:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#APAC-88
 vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.2.18:443?security=tls&type=ws&host=nfs.kdns.fr&sni=nfs.kdns.fr&path=%2Fvless&encryption=none#APAC-89
-vless://e0240134-0986-4b92-a230-fdc8d1200456@108.162.192.4:443?security=tls&type=ws&host=time.is&sni=time.is&path=%2Fvless&encryption=none#测试-timeis-1
-vless://e0240134-0986-4b92-a230-fdc8d1200456@108.162.193.5:443?security=tls&type=ws&host=time.is&sni=time.is&path=%2Fvless&encryption=none#测试-timeis-2
-vless://e0240134-0986-4b92-a230-fdc8d1200456@162.159.192.9:443?security=tls&type=ws&host=time.is&sni=time.is&path=%2Fvless&encryption=none#测试-timeis-3
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.0.7:443?security=tls&type=ws&host=time.is&sni=time.is&path=%2Fvless&encryption=none#测试-timeis-4
-vless://e0240134-0986-4b92-a230-fdc8d1200456@104.17.0.11:443?security=tls&type=ws&host=time.is&sni=time.is&path=%2Fvless&encryption=none#测试-timeis-5
