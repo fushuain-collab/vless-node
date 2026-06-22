@@ -2,5 +2,8 @@ name = "vless-cf-proxy"
 main = "worker.js"
 compatibility_date = "2026-06-17"
 
+[placement]
+mode = "smart"
+
 [vars]
 UUID = "e0240134-0986-4b92-a230-fdc8d1200456"
