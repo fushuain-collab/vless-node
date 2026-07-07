@@ -1,0 +1,556 @@
+# Bettbox/Mihomo 智能分流规则版：国内直连，国外自动代理，广告拦截；旧订阅未覆盖
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+find-process-mode: strict
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  respect-rules: true
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+    - 240.0.0.0/4
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - localhost.ptlogin2.qq.com
+  - dns.msftncsi.com
+  - www.msftncsi.com
+  - time.*.com
+  - time.*.gov
+  - time.*.edu.cn
+  - time1.cloud.tencent.com
+  - '*.market.xiaomi.com'
+  - '*.msftconnecttest.com'
+  - '*.msftncsi.com'
+proxies:
+- name: 香港-01-172.64.148.42:2087-已测可用
+  type: vless
+  server: 172.64.148.42
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 香港-02-172.64.149.181:8443-已测可用
+  type: vless
+  server: 172.64.149.181
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 台湾-03-172.64.149.144:2096-已测可用
+  type: vless
+  server: 172.64.149.144
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 台湾-04-172.64.147.120:8443-已测可用
+  type: vless
+  server: 172.64.147.120
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 美国-05-172.64.147.118:2053-候选
+  type: vless
+  server: 172.64.147.118
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 美国-06-172.64.148.107:8443-候选
+  type: vless
+  server: 172.64.148.107
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 美国-07-172.64.147.189:443-候选
+  type: vless
+  server: 172.64.147.189
+  port: 443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 日本-08-172.64.148.90:2083-候选
+  type: vless
+  server: 172.64.148.90
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 日本-09-172.64.148.113:2087-候选
+  type: vless
+  server: 172.64.148.113
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 韩国-10-172.64.147.152:2096-候选
+  type: vless
+  server: 172.64.147.152
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 韩国-11-172.64.147.50:2096-候选
+  type: vless
+  server: 172.64.147.50
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 新加坡-12-172.64.147.22:2096-候选
+  type: vless
+  server: 172.64.147.22
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 新加坡-13-172.64.148.22:2053-候选
+  type: vless
+  server: 172.64.148.22
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 马来西亚-14-172.64.147.138:2096-候选
+  type: vless
+  server: 172.64.147.138
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 马来西亚-15-172.64.147.100:2053-候选
+  type: vless
+  server: 172.64.147.100
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 印度-16-172.64.149.195:8443-候选
+  type: vless
+  server: 172.64.149.195
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 印度-17-172.64.147.65:2087-候选
+  type: vless
+  server: 172.64.147.65
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 越南-18-172.64.147.14:2083-候选
+  type: vless
+  server: 172.64.147.14
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 越南-19-172.64.148.191:2053-候选
+  type: vless
+  server: 172.64.148.191
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 香港-20-172.64.148.95:2096-候选
+  type: vless
+  server: 172.64.148.95
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+proxy-groups:
+- name: 🚀 国外自动代理
+  type: select
+  proxies:
+  - ♻️ 自动选择
+  - 🔰 手动选择
+  - 香港节点
+  - 台湾节点
+  - 美国节点
+  - 日本节点
+  - 韩国节点
+  - 新加坡节点
+  - 马来西亚节点
+  - 印度节点
+  - 越南节点
+  - DIRECT
+  - 香港-01-172.64.148.42:2087-已测可用
+  - 香港-02-172.64.149.181:8443-已测可用
+  - 台湾-03-172.64.149.144:2096-已测可用
+  - 台湾-04-172.64.147.120:8443-已测可用
+  - 美国-05-172.64.147.118:2053-候选
+  - 美国-06-172.64.148.107:8443-候选
+  - 美国-07-172.64.147.189:443-候选
+  - 日本-08-172.64.148.90:2083-候选
+  - 日本-09-172.64.148.113:2087-候选
+  - 韩国-10-172.64.147.152:2096-候选
+  - 韩国-11-172.64.147.50:2096-候选
+  - 新加坡-12-172.64.147.22:2096-候选
+  - 新加坡-13-172.64.148.22:2053-候选
+  - 马来西亚-14-172.64.147.138:2096-候选
+  - 马来西亚-15-172.64.147.100:2053-候选
+  - 印度-16-172.64.149.195:8443-候选
+  - 印度-17-172.64.147.65:2087-候选
+  - 越南-18-172.64.147.14:2083-候选
+  - 越南-19-172.64.148.191:2053-候选
+  - 香港-20-172.64.148.95:2096-候选
+- name: ♻️ 自动选择
+  type: url-test
+  proxies: &id001
+  - 香港-01-172.64.148.42:2087-已测可用
+  - 香港-02-172.64.149.181:8443-已测可用
+  - 台湾-03-172.64.149.144:2096-已测可用
+  - 台湾-04-172.64.147.120:8443-已测可用
+  - 美国-05-172.64.147.118:2053-候选
+  - 美国-06-172.64.148.107:8443-候选
+  - 美国-07-172.64.147.189:443-候选
+  - 日本-08-172.64.148.90:2083-候选
+  - 日本-09-172.64.148.113:2087-候选
+  - 韩国-10-172.64.147.152:2096-候选
+  - 韩国-11-172.64.147.50:2096-候选
+  - 新加坡-12-172.64.147.22:2096-候选
+  - 新加坡-13-172.64.148.22:2053-候选
+  - 马来西亚-14-172.64.147.138:2096-候选
+  - 马来西亚-15-172.64.147.100:2053-候选
+  - 印度-16-172.64.149.195:8443-候选
+  - 印度-17-172.64.147.65:2087-候选
+  - 越南-18-172.64.147.14:2083-候选
+  - 越南-19-172.64.148.191:2053-候选
+  - 香港-20-172.64.148.95:2096-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 🔰 手动选择
+  type: select
+  proxies: *id001
+- name: 🌏 国内直连
+  type: select
+  proxies:
+  - DIRECT
+  - 🚀 国外自动代理
+- name: 🧱 广告拦截
+  type: select
+  proxies:
+  - REJECT
+  - DIRECT
+- name: 🐟 漏网之鱼
+  type: select
+  proxies:
+  - 🚀 国外自动代理
+  - DIRECT
+- name: 香港节点
+  type: url-test
+  proxies:
+  - 香港-01-172.64.148.42:2087-已测可用
+  - 香港-02-172.64.149.181:8443-已测可用
+  - 香港-20-172.64.148.95:2096-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 台湾节点
+  type: url-test
+  proxies:
+  - 台湾-03-172.64.149.144:2096-已测可用
+  - 台湾-04-172.64.147.120:8443-已测可用
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 美国节点
+  type: url-test
+  proxies:
+  - 美国-05-172.64.147.118:2053-候选
+  - 美国-06-172.64.148.107:8443-候选
+  - 美国-07-172.64.147.189:443-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 日本节点
+  type: url-test
+  proxies:
+  - 日本-08-172.64.148.90:2083-候选
+  - 日本-09-172.64.148.113:2087-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 韩国节点
+  type: url-test
+  proxies:
+  - 韩国-10-172.64.147.152:2096-候选
+  - 韩国-11-172.64.147.50:2096-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 新加坡节点
+  type: url-test
+  proxies:
+  - 新加坡-12-172.64.147.22:2096-候选
+  - 新加坡-13-172.64.148.22:2053-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 马来西亚节点
+  type: url-test
+  proxies:
+  - 马来西亚-14-172.64.147.138:2096-候选
+  - 马来西亚-15-172.64.147.100:2053-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 印度节点
+  type: url-test
+  proxies:
+  - 印度-16-172.64.149.195:8443-候选
+  - 印度-17-172.64.147.65:2087-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 越南节点
+  type: url-test
+  proxies:
+  - 越南-18-172.64.147.14:2083-候选
+  - 越南-19-172.64.148.191:2053-候选
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+rules:
+- DOMAIN-SUFFIX,local,DIRECT
+- DOMAIN-SUFFIX,localhost,DIRECT
+- DOMAIN,localhost,DIRECT
+- IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+- IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+- IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+- IP-CIDR,224.0.0.0/4,DIRECT,no-resolve
+- IP-CIDR6,::1/128,DIRECT,no-resolve
+- IP-CIDR6,fc00::/7,DIRECT,no-resolve
+- IP-CIDR6,fe80::/10,DIRECT,no-resolve
+- GEOSITE,category-ads-all,🧱 广告拦截
+- GEOSITE,cn,🌏 国内直连
+- GEOSITE,apple-cn,🌏 国内直连
+- DOMAIN-SUFFIX,cn,🌏 国内直连
+- DOMAIN-SUFFIX,中国,🌏 国内直连
+- DOMAIN-SUFFIX,公司,🌏 国内直连
+- DOMAIN-SUFFIX,网络,🌏 国内直连
+- DOMAIN-KEYWORD,baidu,🌏 国内直连
+- DOMAIN-KEYWORD,alipay,🌏 国内直连
+- DOMAIN-KEYWORD,taobao,🌏 国内直连
+- DOMAIN-KEYWORD,tmall,🌏 国内直连
+- DOMAIN-KEYWORD,jd,🌏 国内直连
+- DOMAIN-KEYWORD,qq,🌏 国内直连
+- DOMAIN-KEYWORD,weixin,🌏 国内直连
+- DOMAIN-KEYWORD,wechat,🌏 国内直连
+- DOMAIN-KEYWORD,bilibili,🌏 国内直连
+- DOMAIN-KEYWORD,douyin,🌏 国内直连
+- DOMAIN-KEYWORD,bytedance,🌏 国内直连
+- DOMAIN-KEYWORD,xiaomi,🌏 国内直连
+- DOMAIN-KEYWORD,huawei,🌏 国内直连
+- GEOSITE,google,🚀 国外自动代理
+- GEOSITE,youtube,🚀 国外自动代理
+- GEOSITE,telegram,🚀 国外自动代理
+- GEOSITE,twitter,🚀 国外自动代理
+- GEOSITE,facebook,🚀 国外自动代理
+- GEOSITE,instagram,🚀 国外自动代理
+- GEOSITE,netflix,🚀 国外自动代理
+- GEOSITE,github,🚀 国外自动代理
+- GEOSITE,openai,🚀 国外自动代理
+- GEOSITE,geolocation-!cn,🚀 国外自动代理
+- GEOIP,CN,🌏 国内直连
+- MATCH,🐟 漏网之鱼
