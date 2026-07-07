@@ -1,0 +1,563 @@
+# Bettbox / Mihomo config generated from final-low50-candidates30
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+find-process-mode: strict
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+proxies:
+- name: 低延迟-01-172.64.148.42:2053-c0-t0
+  type: vless
+  server: 172.64.148.42
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-02-172.64.148.42:2087-c0-t0
+  type: vless
+  server: 172.64.148.42
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-03-172.64.147.56:2087-c3-t172
+  type: vless
+  server: 172.64.147.56
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-04-172.64.149.171:2053-c2-t181
+  type: vless
+  server: 172.64.149.171
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-05-172.64.149.252:8443-c3-t184
+  type: vless
+  server: 172.64.149.252
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-06-172.64.147.78:8443-c2-t188
+  type: vless
+  server: 172.64.147.78
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-07-172.64.147.118:2087-c2-t191
+  type: vless
+  server: 172.64.147.118
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-08-172.64.148.43:443-c2-t189
+  type: vless
+  server: 172.64.148.43
+  port: 443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-09-172.64.147.245:2087-c2-t192
+  type: vless
+  server: 172.64.147.245
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-10-172.64.149.181:8443-c3-t184
+  type: vless
+  server: 172.64.149.181
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-11-172.64.148.113:443-c2-t200
+  type: vless
+  server: 172.64.148.113
+  port: 443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-12-172.64.149.63:8443-c2-t196
+  type: vless
+  server: 172.64.149.63
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-13-172.64.148.173:8443-c2-t195
+  type: vless
+  server: 172.64.148.173
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-14-172.64.147.137:8443-c3-t186
+  type: vless
+  server: 172.64.147.137
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-15-172.64.149.52:2083-c2-t198
+  type: vless
+  server: 172.64.149.52
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-16-172.64.148.98:2087-c2-t197
+  type: vless
+  server: 172.64.148.98
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-17-172.64.147.131:2083-c3-t188
+  type: vless
+  server: 172.64.147.131
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-18-172.64.147.174:2053-c3-t191
+  type: vless
+  server: 172.64.147.174
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-19-172.64.149.244:443-c3-t193
+  type: vless
+  server: 172.64.149.244
+  port: 443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-20-172.64.149.144:2096-c4-t191
+  type: vless
+  server: 172.64.149.144
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-21-172.64.149.171:2087-c3-t198
+  type: vless
+  server: 172.64.149.171
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-22-172.64.149.223:2087-c2-t199
+  type: vless
+  server: 172.64.149.223
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-23-172.64.148.27:2053-c3-t193
+  type: vless
+  server: 172.64.148.27
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-24-172.64.148.243:8443-c3-t194
+  type: vless
+  server: 172.64.148.243
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-25-172.64.147.120:8443-c4-t190
+  type: vless
+  server: 172.64.147.120
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-26-172.64.149.153:2053-c3-t195
+  type: vless
+  server: 172.64.149.153
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-27-172.64.148.155:2083-c2-t203
+  type: vless
+  server: 172.64.148.155
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-28-172.64.149.48:2096-c3-t195
+  type: vless
+  server: 172.64.149.48
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-29-172.64.147.237:2083-c2-t200
+  type: vless
+  server: 172.64.147.237
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: 低延迟-30-172.64.148.183:2083-c3-t199
+  type: vless
+  server: 172.64.148.183
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+proxy-groups:
+- name: 🚀 节点选择
+  type: select
+  proxies:
+  - ♻️ 自动选择
+  - 🔰 手动选择
+  - DIRECT
+  - 低延迟-01-172.64.148.42:2053-c0-t0
+  - 低延迟-02-172.64.148.42:2087-c0-t0
+  - 低延迟-03-172.64.147.56:2087-c3-t172
+  - 低延迟-04-172.64.149.171:2053-c2-t181
+  - 低延迟-05-172.64.149.252:8443-c3-t184
+  - 低延迟-06-172.64.147.78:8443-c2-t188
+  - 低延迟-07-172.64.147.118:2087-c2-t191
+  - 低延迟-08-172.64.148.43:443-c2-t189
+  - 低延迟-09-172.64.147.245:2087-c2-t192
+  - 低延迟-10-172.64.149.181:8443-c3-t184
+  - 低延迟-11-172.64.148.113:443-c2-t200
+  - 低延迟-12-172.64.149.63:8443-c2-t196
+  - 低延迟-13-172.64.148.173:8443-c2-t195
+  - 低延迟-14-172.64.147.137:8443-c3-t186
+  - 低延迟-15-172.64.149.52:2083-c2-t198
+  - 低延迟-16-172.64.148.98:2087-c2-t197
+  - 低延迟-17-172.64.147.131:2083-c3-t188
+  - 低延迟-18-172.64.147.174:2053-c3-t191
+  - 低延迟-19-172.64.149.244:443-c3-t193
+  - 低延迟-20-172.64.149.144:2096-c4-t191
+  - 低延迟-21-172.64.149.171:2087-c3-t198
+  - 低延迟-22-172.64.149.223:2087-c2-t199
+  - 低延迟-23-172.64.148.27:2053-c3-t193
+  - 低延迟-24-172.64.148.243:8443-c3-t194
+  - 低延迟-25-172.64.147.120:8443-c4-t190
+  - 低延迟-26-172.64.149.153:2053-c3-t195
+  - 低延迟-27-172.64.148.155:2083-c2-t203
+  - 低延迟-28-172.64.149.48:2096-c3-t195
+  - 低延迟-29-172.64.147.237:2083-c2-t200
+  - 低延迟-30-172.64.148.183:2083-c3-t199
+- name: ♻️ 自动选择
+  type: url-test
+  proxies: &id001
+  - 低延迟-01-172.64.148.42:2053-c0-t0
+  - 低延迟-02-172.64.148.42:2087-c0-t0
+  - 低延迟-03-172.64.147.56:2087-c3-t172
+  - 低延迟-04-172.64.149.171:2053-c2-t181
+  - 低延迟-05-172.64.149.252:8443-c3-t184
+  - 低延迟-06-172.64.147.78:8443-c2-t188
+  - 低延迟-07-172.64.147.118:2087-c2-t191
+  - 低延迟-08-172.64.148.43:443-c2-t189
+  - 低延迟-09-172.64.147.245:2087-c2-t192
+  - 低延迟-10-172.64.149.181:8443-c3-t184
+  - 低延迟-11-172.64.148.113:443-c2-t200
+  - 低延迟-12-172.64.149.63:8443-c2-t196
+  - 低延迟-13-172.64.148.173:8443-c2-t195
+  - 低延迟-14-172.64.147.137:8443-c3-t186
+  - 低延迟-15-172.64.149.52:2083-c2-t198
+  - 低延迟-16-172.64.148.98:2087-c2-t197
+  - 低延迟-17-172.64.147.131:2083-c3-t188
+  - 低延迟-18-172.64.147.174:2053-c3-t191
+  - 低延迟-19-172.64.149.244:443-c3-t193
+  - 低延迟-20-172.64.149.144:2096-c4-t191
+  - 低延迟-21-172.64.149.171:2087-c3-t198
+  - 低延迟-22-172.64.149.223:2087-c2-t199
+  - 低延迟-23-172.64.148.27:2053-c3-t193
+  - 低延迟-24-172.64.148.243:8443-c3-t194
+  - 低延迟-25-172.64.147.120:8443-c4-t190
+  - 低延迟-26-172.64.149.153:2053-c3-t195
+  - 低延迟-27-172.64.148.155:2083-c2-t203
+  - 低延迟-28-172.64.149.48:2096-c3-t195
+  - 低延迟-29-172.64.147.237:2083-c2-t200
+  - 低延迟-30-172.64.148.183:2083-c3-t199
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  lazy: true
+- name: 🔰 手动选择
+  type: select
+  proxies: *id001
+rules:
+- DOMAIN-SUFFIX,local,DIRECT
+- IP-CIDR,127.0.0.0/8,DIRECT
+- IP-CIDR,10.0.0.0/8,DIRECT
+- IP-CIDR,172.16.0.0/12,DIRECT
+- IP-CIDR,192.168.0.0/16,DIRECT
+- GEOIP,CN,DIRECT
+- MATCH,🚀 节点选择
