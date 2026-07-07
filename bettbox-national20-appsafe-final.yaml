@@ -1,0 +1,493 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+    - 240.0.0.0/4
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - localhost
+  - '*.localhost'
+  - time.*.com
+  - time.*.gov
+  - time.*.edu.cn
+  - '*.ntp.org.cn'
+  - '*.pool.ntp.org'
+  - dns.msftncsi.com
+  - www.msftncsi.com
+  - '*.msftconnecttest.com'
+  - localhost.ptlogin2.qq.com
+  - '*.market.xiaomi.com'
+  - '*.0elog.com'
+  - api.*
+  - '*.api.*'
+proxies:
+- name: HK-01-172.64.148.42:2053-STABLE
+  type: vless
+  server: 172.64.148.42
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: HK-02-172.64.148.42:2087-STABLE
+  type: vless
+  server: 172.64.148.42
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: TW-03-172.64.149.181:8443-OK
+  type: vless
+  server: 172.64.149.181
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: TW-04-172.64.149.144:2096-OK
+  type: vless
+  server: 172.64.149.144
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: US-05-172.64.147.120:8443-OK
+  type: vless
+  server: 172.64.147.120
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: US-06-172.64.147.118:2053-AUTO
+  type: vless
+  server: 172.64.147.118
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: US-07-172.64.148.107:8443-AUTO
+  type: vless
+  server: 172.64.148.107
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: JP-08-172.64.147.189:443-AUTO
+  type: vless
+  server: 172.64.147.189
+  port: 443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: JP-09-172.64.148.90:2083-AUTO
+  type: vless
+  server: 172.64.148.90
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: KR-10-172.64.148.113:2087-AUTO
+  type: vless
+  server: 172.64.148.113
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: KR-11-172.64.147.152:2096-AUTO
+  type: vless
+  server: 172.64.147.152
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: SG-12-172.64.147.50:2096-AUTO
+  type: vless
+  server: 172.64.147.50
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: SG-13-172.64.147.22:2096-AUTO
+  type: vless
+  server: 172.64.147.22
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: MY-14-172.64.148.22:2053-AUTO
+  type: vless
+  server: 172.64.148.22
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: MY-15-172.64.147.138:2096-AUTO
+  type: vless
+  server: 172.64.147.138
+  port: 2096
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: IN-16-172.64.147.100:2053-AUTO
+  type: vless
+  server: 172.64.147.100
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: IN-17-172.64.149.195:8443-AUTO
+  type: vless
+  server: 172.64.149.195
+  port: 8443
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: VN-18-172.64.147.65:2087-AUTO
+  type: vless
+  server: 172.64.147.65
+  port: 2087
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: VN-19-172.64.147.14:2083-AUTO
+  type: vless
+  server: 172.64.147.14
+  port: 2083
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+- name: HK-20-172.64.148.191:2053-AUTO
+  type: vless
+  server: 172.64.148.191
+  port: 2053
+  uuid: e0240134-0986-4b92-a230-fdc8d1200456
+  network: ws
+  tls: true
+  udp: true
+  servername: nfs.kdns.fr
+  client-fingerprint: chrome
+  skip-cert-verify: false
+  ws-opts:
+    path: /vless
+    headers:
+      Host: nfs.kdns.fr
+proxy-groups:
+- name: PROXY
+  type: select
+  proxies:
+  - AUTO
+  - FALLBACK
+  - STABLE
+  - MANUAL
+  - DIRECT
+  - HK-01-172.64.148.42:2053-STABLE
+  - HK-02-172.64.148.42:2087-STABLE
+  - TW-03-172.64.149.181:8443-OK
+  - TW-04-172.64.149.144:2096-OK
+  - US-05-172.64.147.120:8443-OK
+  - US-06-172.64.147.118:2053-AUTO
+  - US-07-172.64.148.107:8443-AUTO
+  - JP-08-172.64.147.189:443-AUTO
+  - JP-09-172.64.148.90:2083-AUTO
+  - KR-10-172.64.148.113:2087-AUTO
+  - KR-11-172.64.147.152:2096-AUTO
+  - SG-12-172.64.147.50:2096-AUTO
+  - SG-13-172.64.147.22:2096-AUTO
+  - MY-14-172.64.148.22:2053-AUTO
+  - MY-15-172.64.147.138:2096-AUTO
+  - IN-16-172.64.147.100:2053-AUTO
+  - IN-17-172.64.149.195:8443-AUTO
+  - VN-18-172.64.147.65:2087-AUTO
+  - VN-19-172.64.147.14:2083-AUTO
+  - HK-20-172.64.148.191:2053-AUTO
+- name: AUTO
+  type: url-test
+  proxies: &id001
+  - HK-01-172.64.148.42:2053-STABLE
+  - HK-02-172.64.148.42:2087-STABLE
+  - TW-03-172.64.149.181:8443-OK
+  - TW-04-172.64.149.144:2096-OK
+  - US-05-172.64.147.120:8443-OK
+  - US-06-172.64.147.118:2053-AUTO
+  - US-07-172.64.148.107:8443-AUTO
+  - JP-08-172.64.147.189:443-AUTO
+  - JP-09-172.64.148.90:2083-AUTO
+  - KR-10-172.64.148.113:2087-AUTO
+  - KR-11-172.64.147.152:2096-AUTO
+  - SG-12-172.64.147.50:2096-AUTO
+  - SG-13-172.64.147.22:2096-AUTO
+  - MY-14-172.64.148.22:2053-AUTO
+  - MY-15-172.64.147.138:2096-AUTO
+  - IN-16-172.64.147.100:2053-AUTO
+  - IN-17-172.64.149.195:8443-AUTO
+  - VN-18-172.64.147.65:2087-AUTO
+  - VN-19-172.64.147.14:2083-AUTO
+  - HK-20-172.64.148.191:2053-AUTO
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 50
+- name: FALLBACK
+  type: fallback
+  proxies: *id001
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+- name: STABLE
+  type: url-test
+  proxies:
+  - HK-01-172.64.148.42:2053-STABLE
+  - HK-02-172.64.148.42:2087-STABLE
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 20
+- name: MANUAL
+  type: select
+  proxies: *id001
+- name: DOMESTIC
+  type: select
+  proxies:
+  - DIRECT
+  - PROXY
+- name: GLOBAL
+  type: select
+  proxies:
+  - PROXY
+  - DIRECT
+rules:
+- PROCESS-NAME,com.tencent.mm,DIRECT
+- PROCESS-NAME,com.tencent.mobileqq,DIRECT
+- PROCESS-NAME,com.eg.android.AlipayGphone,DIRECT
+- PROCESS-NAME,com.taobao.taobao,DIRECT
+- PROCESS-NAME,com.jingdong.app.mall,DIRECT
+- PROCESS-NAME,tv.danmaku.bili,DIRECT
+- PROCESS-NAME,com.ss.android.ugc.aweme,DIRECT
+- PROCESS-NAME,com.xingin.xhs,DIRECT
+- DOMAIN-SUFFIX,local,DIRECT
+- DOMAIN,localhost,DIRECT
+- IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+- IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+- IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+- IP-CIDR6,::1/128,DIRECT,no-resolve
+- IP-CIDR6,fc00::/7,DIRECT,no-resolve
+- IP-CIDR6,fe80::/10,DIRECT,no-resolve
+- GEOSITE,private,DIRECT
+- GEOIP,private,DIRECT,no-resolve
+- DOMAIN-SUFFIX,0elog.com,DIRECT
+- DOMAIN,api.0elog.com,DIRECT
+- DOMAIN-SUFFIX,hhhl.cc,DIRECT
+- DOMAIN,dc.hhhl.cc,DIRECT
+- DOMAIN-KEYWORD,api,DIRECT
+- DOMAIN-KEYWORD,backend,DIRECT
+- DOMAIN-KEYWORD,dashboard,DIRECT
+- DOMAIN-KEYWORD,service,DIRECT
+- GEOSITE,category-ads-all,REJECT
+- GEOSITE,cn,DOMESTIC
+- GEOSITE,apple-cn,DOMESTIC
+- DOMAIN-SUFFIX,cn,DOMESTIC
+- GEOIP,CN,DOMESTIC
+- GEOSITE,google,PROXY
+- GEOSITE,youtube,PROXY
+- GEOSITE,telegram,PROXY
+- GEOSITE,github,PROXY
+- GEOSITE,openai,PROXY
+- GEOSITE,twitter,PROXY
+- GEOSITE,facebook,PROXY
+- GEOSITE,instagram,PROXY
+- GEOSITE,netflix,PROXY
+- GEOSITE,discord,PROXY
+- GEOSITE,reddit,PROXY
+- GEOSITE,tiktok,PROXY
+- GEOSITE,spotify,PROXY
+- GEOSITE,pixiv,PROXY
+- DOMAIN-SUFFIX,google.com,PROXY
+- DOMAIN-SUFFIX,gstatic.com,PROXY
+- DOMAIN-SUFFIX,googleapis.com,PROXY
+- DOMAIN-SUFFIX,googlevideo.com,PROXY
+- DOMAIN-SUFFIX,youtube.com,PROXY
+- DOMAIN-SUFFIX,ytimg.com,PROXY
+- DOMAIN-SUFFIX,t.me,PROXY
+- DOMAIN-SUFFIX,telegram.org,PROXY
+- DOMAIN-SUFFIX,github.com,PROXY
+- DOMAIN-SUFFIX,githubusercontent.com,PROXY
+- DOMAIN-SUFFIX,openai.com,PROXY
+- DOMAIN-SUFFIX,chatgpt.com,PROXY
+- DOMAIN-SUFFIX,x.com,PROXY
+- DOMAIN-SUFFIX,twitter.com,PROXY
+- MATCH,DIRECT
