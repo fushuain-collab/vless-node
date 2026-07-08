@@ -1,0 +1,104 @@
+name: Diagnose and Repair Bettbox VLESS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Diagnose Cloudflare worker and generate fixed subscriptions
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          UUID: e0240134-0986-4b92-a230-fdc8d1200456
+        run: |
+          python3 <<'PY2'
+          import os, json, urllib.request, urllib.error, subprocess, re
+          from pathlib import Path
+          token=os.environ['CF_TOKEN']; acc=os.environ['CF_ACCOUNT_ID']; uuid=os.environ['UUID']
+          H={'Authorization':'Bearer '+token,'Content-Type':'application/json'}
+          def cf(path):
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4'+path, headers=H)
+              try:
+                  with urllib.request.urlopen(req, timeout=40) as r:
+                      ct=r.headers.get('content-type','')
+                      data=r.read()
+                      if 'json' in ct:
+                          return r.status,json.loads(data.decode())
+                      return r.status,data.decode('utf-8','replace')
+              except urllib.error.HTTPError as e:
+                  body=e.read().decode('utf-8','replace')
+                  try: body=json.loads(body)
+                  except Exception: pass
+                  return e.code,body
+              except Exception as e:
+                  return 'ERR',repr(e)
+          def sh(cmd):
+              print('\n$ '+cmd)
+              p=subprocess.run(cmd, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=80)
+              print(p.stdout[:8000])
+              return p.stdout
+
+          print('## CF TOKEN VERIFY')
+          print(cf('/user/tokens/verify'))
+          print('## CF ACCOUNT')
+          print(cf(f'/accounts/{acc}'))
+          print('## EDGETUNNEL SERVICE')
+          service=cf(f'/accounts/{acc}/workers/services/edgetunnel-proxy')
+          print(json.dumps(service[1], ensure_ascii=False)[:6000])
+          print('## EDGETUNNEL SETTINGS')
+          settings=cf(f'/accounts/{acc}/workers/scripts/edgetunnel-proxy/settings')
+          print(json.dumps(settings[1], ensure_ascii=False)[:6000])
+          print('## EDGETUNNEL SCRIPT')
+          st,script=cf(f'/accounts/{acc}/workers/scripts/edgetunnel-proxy')
+          print('script status', st)
+          if isinstance(script,str):
+              print(script[:12000])
+              Path('diag-edgetunnel-proxy.js').write_text(script, encoding='utf-8')
+          else:
+              print(json.dumps(script, ensure_ascii=False)[:12000])
+
+          print('## ENDPOINT TESTS')
+          for host in ['nfs.kdns.fr','cloudflare-ip.mofashi.ltd','edgetunnel-proxy.fushuain.workers.dev']:
+              sh(f'getent ahosts {host} || true')
+              for port in [443,8443,2053,2083,2087,2096]:
+                  sh(f'timeout 10 bash -c "</dev/tcp/{host}/{port}" && echo OPEN:{host}:{port} || echo FAIL:{host}:{port}')
+              for path in ['/', '/vless', '/'+uuid, '/'+uuid+'?ed=2048']:
+                  sh(f'curl -k -i --http1.1 --connect-timeout 10 --max-time 25 https://{host}{path} | head -120 || true')
+
+          print('## GENERATE FIXED SUBSCRIPTIONS')
+          src=Path('bettbox-national20-ruleset-final.yaml').read_text(encoding='utf-8')
+          def prefix_nodes(text, prefix):
+              return re.sub(r'(\b(?:HK|TW|US|JP|KR|SG|MY|IN|VN)-\d{2}-172\.64\.\d{1,3}\.\d{1,3}:\d+-(?:STABLE|OK|AUTO)\b)', prefix+r'\1', text)
+          def build(prefix, server, port=None, path='/vless'):
+              out=src
+              out=re.sub(r'^(\s*server:\s*)172\.64\.\d{1,3}\.\d{1,3}\s*$', lambda m: m.group(1)+server, out, flags=re.M)
+              if port is not None:
+                  out=re.sub(r'^(\s*port:\s*)\d+\s*$', lambda m: m.group(1)+str(port), out, flags=re.M)
+              out=re.sub(r'^(\s*path:\s*)/[^\s#]+\s*$', lambda m: m.group(1)+path, out, flags=re.M)
+              out=prefix_nodes(out,prefix)
+              return '# repaired by diagnostic workflow\n# server=%s port=%s path=%s\n\n'%(server, port or 'original', path)+out
+          files={
+              'bettbox-final-nfs-443-uuidpath.yaml': build('FINAL-NFS443-', 'nfs.kdns.fr', 443, '/'+uuid),
+              'bettbox-final-nfs-original-uuidpath.yaml': build('FINAL-NFS-ORIG-', 'nfs.kdns.fr', None, '/'+uuid),
+              'bettbox-final-cf-443-uuidpath.yaml': build('FINAL-CF443-', 'cloudflare-ip.mofashi.ltd', 443, '/'+uuid),
+              'bettbox-final-workerdev-443-uuidpath.yaml': build('FINAL-WORKER443-', 'edgetunnel-proxy.fushuain.workers.dev', 443, '/'+uuid),
+          }
+          for fn,txt in files.items():
+              Path(fn).write_text(txt, encoding='utf-8')
+              print(fn, 'server_nfs', txt.count('server: nfs.kdns.fr'), 'server_cf', txt.count('server: cloudflare-ip.mofashi.ltd'), 'server_worker', txt.count('server: edgetunnel-proxy.fushuain.workers.dev'), 'port443', txt.count('port: 443'), 'uuidpath', txt.count('path: /'+uuid))
+          PY2
+
+      - name: Commit diagnostics and fixed subscriptions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bettbox-final-*.yaml diag-edgetunnel-proxy.js || true
+          git commit -m "fix: diagnose and add final bettbox subscriptions" || echo "No changes"
+          git push
