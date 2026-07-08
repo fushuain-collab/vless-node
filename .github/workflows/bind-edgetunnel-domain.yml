@@ -1,0 +1,51 @@
+name: Bind EdgeTunnel Custom Domain
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Diagnose and bind nfs.kdns.fr route
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+          token=os.environ['CF_TOKEN']; acc=os.environ['CF_ACCOUNT_ID']
+          H={'Authorization':'Bearer '+token,'Content-Type':'application/json'}
+          def req(method,url,data=None):
+              b=json.dumps(data).encode() if data is not None else None
+              r=urllib.request.Request(url,data=b,method=method,headers=H)
+              try:
+                  with urllib.request.urlopen(r,timeout=30) as resp:
+                      t=resp.read().decode(); print(method,url,'->',resp.status,t[:1600]); return resp.status,json.loads(t) if t else {}
+              except urllib.error.HTTPError as e:
+                  t=e.read().decode(errors='ignore'); print(method,url,'->',e.code,t[:1600])
+                  try: return e.code,json.loads(t)
+                  except: return e.code,{}
+              except Exception as e:
+                  print(method,url,'ERR',repr(e)); return 'ERR',{}
+          api='https://api.cloudflare.com/client/v4'
+          req('GET',f'{api}/accounts/{acc}/workers/services/edgetunnel-proxy')
+          st,z=req('GET',f'{api}/zones?name=kdns.fr&account.id={acc}&per_page=50')
+          zones=z.get('result') or []
+          if not zones:
+              st,z=req('GET',f'{api}/zones?account.id={acc}&per_page=50')
+              zones=z.get('result') or []
+          print('ZONES_FOUND',[(x.get('id'),x.get('name'),x.get('status')) for x in zones])
+          zid=None; zname=None
+          for x in zones:
+              if x.get('name') in ('kdns.fr','nfs.kdns.fr'):
+                  zid=x['id']; zname=x['name']; break
+          if zid:
+              print('USING_ZONE',zid,zname)
+              req('GET',f'{api}/zones/{zid}/workers/routes')
+              req('POST',f'{api}/zones/{zid}/workers/routes',{'pattern':'nfs.kdns.fr/*','script':'edgetunnel-proxy'})
+              req('GET',f'{api}/zones/{zid}/workers/routes')
+              req('GET',f'{api}/zones/{zid}/dns_records?name=nfs.kdns.fr')
+          else:
+              print('NO_ZONE_CAN_BIND')
+          PY
