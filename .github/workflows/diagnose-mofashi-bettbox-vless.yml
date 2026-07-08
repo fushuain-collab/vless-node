@@ -1,0 +1,44 @@
+name: Diagnose Isolated Mofashi Worker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: cloudflare/mofashi-bettbox-vless
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Show repo files only new project
+        run: |
+          pwd
+          ls -la
+          sed -n '1,220p' wrangler.toml
+          echo '--- worker route snippets ---'
+          grep -n "health\|sub\|export default\|name =" -n worker.js || true
+      - name: Wrangler inspect only new worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler@latest versions list mofashi-bettbox-vless || true
+          npx wrangler@latest deployments list --name mofashi-bettbox-vless || true
+      - name: Redeploy new worker and verbose verify
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler@latest deploy
+          echo 'wait propagation...'
+          sleep 20
+          for p in / /health /sub /uri /not-found-test; do
+            echo "===== $p ====="
+            curl -i -sS --connect-timeout 20 --max-time 60 "https://mofashi-bettbox-vless.fushuain.workers.dev$p" | sed -n '1,80p' || true
+          done
