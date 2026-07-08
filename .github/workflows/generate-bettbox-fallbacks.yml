@@ -1,0 +1,52 @@
+name: Generate Bettbox Fallback Subscriptions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate fallback subscriptions
+        run: |
+          python3 <<'PY'
+          import re
+          from pathlib import Path
+
+          src = Path('bettbox-national20-ruleset-final.yaml')
+          yaml = src.read_text(encoding='utf-8')
+
+          def prefix_nodes(text, prefix):
+              text = re.sub(r'(\b(?:HK|TW|US|JP|KR|SG|MY|IN|VN)-\d{2}-172\.64\.\d{1,3}\.\d{1,3}:\d+-(?:STABLE|OK|AUTO)\b)', prefix + r'\1', text)
+              return text
+
+          # 1) Direct to nfs.kdns.fr, keep original ports/SNI/Host/path.
+          nfs = re.sub(r'^(\s*server:\s*)172\.64\.\d{1,3}\.\d{1,3}\s*$', r'\1nfs.kdns.fr', yaml, flags=re.M)
+          nfs = prefix_nodes(nfs, 'NFS-DIRECT-')
+          nfs = '# Bettbox fallback: server => nfs.kdns.fr, keep original ports/SNI/Host/path\n\n' + nfs
+          Path('bettbox-mofashi-nfs-direct.yaml').write_text(nfs, encoding='utf-8')
+
+          # 2) Cloudflare optimized entry, force every node to 443.
+          cf443 = re.sub(r'^(\s*server:\s*)172\.64\.\d{1,3}\.\d{1,3}\s*$', r'\1cloudflare-ip.mofashi.ltd', yaml, flags=re.M)
+          cf443 = re.sub(r'^(\s*port:\s*)\d+\s*$', r'\1443', cf443, flags=re.M)
+          cf443 = prefix_nodes(cf443, 'CF443-')
+          cf443 = '# Bettbox fallback: server => cloudflare-ip.mofashi.ltd, force port => 443\n\n' + cf443
+          Path('bettbox-mofashi-cf-443only.yaml').write_text(cf443, encoding='utf-8')
+
+          print('nfs server count', nfs.count('server: nfs.kdns.fr'))
+          print('cf server count', cf443.count('server: cloudflare-ip.mofashi.ltd'))
+          print('cf 443 count', cf443.count('port: 443'))
+          PY
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bettbox-mofashi-nfs-direct.yaml bettbox-mofashi-cf-443only.yaml
+          git commit -m "sub: generate bettbox fallback subscriptions" || echo "No changes"
+          git push
