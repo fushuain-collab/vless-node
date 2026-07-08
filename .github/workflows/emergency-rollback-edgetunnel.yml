@@ -1,0 +1,63 @@
+name: Emergency Rollback EdgeTunnel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollback edgetunnel-proxy to previous Cloudflare deployment
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error, sys
+          token=os.environ['CF_TOKEN']; acc=os.environ['CF_ACCOUNT_ID']; script='edgetunnel-proxy'
+          current_bad='a9dde989-e01e-4f8d-95ce-287b77279443'
+          api='https://api.cloudflare.com/client/v4'
+          H={'Authorization':'Bearer '+token,'Content-Type':'application/json'}
+          def req(method,url,data=None):
+              body=json.dumps(data).encode() if data is not None else None
+              r=urllib.request.Request(url,data=body,method=method,headers=H)
+              try:
+                  with urllib.request.urlopen(r,timeout=60) as resp:
+                      txt=resp.read().decode(); print('\n###',method,url,'->',resp.status); print(txt[:4000]); return resp.status,json.loads(txt) if txt else {}
+              except urllib.error.HTTPError as e:
+                  txt=e.read().decode(errors='ignore'); print('\n###',method,url,'->',e.code); print(txt[:4000])
+                  try: return e.code,json.loads(txt)
+                  except: return e.code,{}
+          st,data=req('GET',f'{api}/accounts/{acc}/workers/scripts/{script}/deployments')
+          if st!=200 or not data.get('success'):
+              print('Cannot list deployments; aborting')
+              sys.exit(2)
+          deployments=data.get('result') or []
+          print('DEPLOYMENT_COUNT', len(deployments))
+          candidates=[]
+          for d in deployments:
+              print('DEPLOYMENT', d.get('id'), d.get('created_on'), d.get('annotations'))
+              for v in d.get('versions',[]) or []:
+                  vid=v.get('version_id') or v.get('id')
+                  pct=v.get('percentage')
+                  print('  VERSION', vid, 'pct', pct)
+                  if vid and vid != current_bad:
+                      candidates.append((d.get('created_on') or '', vid, pct, d.get('id')))
+          if not candidates:
+              print('No previous version found; aborting')
+              sys.exit(3)
+          # deployments are usually newest first; choose first non-current version from list
+          target=candidates[0][1]
+          print('ROLLBACK_TARGET_VERSION', target)
+          payload={
+            'strategy':'percentage',
+            'versions':[{'version_id': target, 'percentage': 100}],
+            'annotations': {'workers/message':'Emergency rollback: restore version before accidental deployment'}
+          }
+          st2,res=req('POST',f'{api}/accounts/{acc}/workers/scripts/{script}/deployments',payload)
+          if st2 not in (200,201) or not res.get('success'):
+              print('Rollback POST failed')
+              sys.exit(4)
+          print('ROLLBACK_DONE', target)
+          req('GET',f'{api}/accounts/{acc}/workers/scripts/{script}/deployments')
+          PY
