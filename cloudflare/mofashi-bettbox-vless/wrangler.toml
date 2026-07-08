@@ -1,0 +1,9 @@
+name = "mofashi-bettbox-vless"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "2a59ea0bbb2b91a2c98768cff534bec3"
+workers_dev = true
+
+[observability]
+enabled = true
