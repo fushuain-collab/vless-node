@@ -1,0 +1,8 @@
+name = "mofashi-bettbox-cf-sub"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+account_id = "2a59ea0bbb2b91a2c98768cff534bec3"
+workers_dev = true
+
+[observability]
+enabled = true
