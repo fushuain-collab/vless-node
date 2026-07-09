@@ -1,0 +1,44 @@
+port: 7890
+socks-port: 7891
+allow-lan: true
+mode: rule
+log-level: info
+
+proxies:
+  - name: VLESS-2053
+    type: vless
+    server: 172.64.148.42
+    port: 2053
+    uuid: 8f3a9b2c-6d4e-4a1f-9c2b-7e8d5f0a1b3c
+    network: ws
+    tls: true
+    udp: true
+    servername: vless.nfs.kdns.fr
+    ws-opts:
+      path: /vless
+      headers:
+        Host: vless.nfs.kdns.fr
+  - name: VLESS-2087
+    type: vless
+    server: 172.64.148.42
+    port: 2087
+    uuid: 8f3a9b2c-6d4e-4a1f-9c2b-7e8d5f0a1b3c
+    network: ws
+    tls: true
+    udp: true
+    servername: vless.nfs.kdns.fr
+    ws-opts:
+      path: /vless
+      headers:
+        Host: vless.nfs.kdns.fr
+proxy-groups:
+  - name: Proxy
+    type: select
+    proxies:
+      - VLESS-2053
+      - VLESS-2087
+rules:
+  - DOMAIN-SUFFIX,0elog.com,Proxy
+  - DOMAIN,api.0elog.com,Proxy
+  - GEOIP,CN,DIRECT
+  - MATCH,Proxy
