@@ -2,11 +2,6 @@ mixed-port: 7890
 allow-lan: true
 mode: rule
 log-level: info
-find-process-mode: always
-unified-delay: true
-tcp-concurrent: true
-geosite-matcher: succinct
-global-client-fingerprint: chrome
 
 dns:
   enable: true
