@@ -76,12 +76,6 @@ proxy-groups:
     url: http://www.gstatic.com/generate_204
     interval: 300
 
-  - name: DIRECT
-    type: select
-    proxies:
-      - DIRECT
-      - PROXY
-
 rules:
   - DOMAIN-SUFFIX,0elog.com,PROXY
   - DOMAIN,api.0elog.com,PROXY
