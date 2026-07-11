@@ -1,6 +1,6 @@
-# YUHE Bettbox / Mihomo - pure built-in rules version
-# No external rule-providers. Designed for Bettbox Android stability.
-# Updated by Operit.
+# YUHE Bettbox / Mihomo - online hot rule-providers version
+# Sources: blackmatrix7/ios_rule_script + Loyalsoldier/clash-rules
+# Designed for Bettbox Android. Refresh subscription after update.
 
 mixed-port: 7890
 allow-lan: false
@@ -27,9 +27,11 @@ sniffer:
     QUIC:
       ports: [443, 8443]
   force-domain:
-    - '+.v2ex.com'
     - '+.google.com'
     - '+.youtube.com'
+    - '+.openai.com'
+    - '+.chatgpt.com'
+    - '+.github.com'
   skip-domain:
     - Mijia Cloud
     - dlg.io.mi.com
@@ -52,7 +54,6 @@ dns:
     - '*.localhost'
     - '*.test'
     - '*.home.arpa'
-    - 'localhost.ptlogin2.qq.com'
     - '+.msftconnecttest.com'
     - '+.msftncsi.com'
     - '+.time.windows.com'
@@ -233,159 +234,183 @@ proxy-groups:
     interval: 300
     lazy: true
 
+rule-providers:
+  reject-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/reject.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Advertising/Advertising.yaml
+  openai-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/openai.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/OpenAI/OpenAI.yaml
+  claude-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/claude.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Claude/Claude.yaml
+  gemini-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/gemini.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Gemini/Gemini.yaml
+  youtube-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/youtube.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.yaml
+  github-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/github.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GitHub/GitHub.yaml
+  telegram-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/telegram.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram.yaml
+  netflix-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/netflix.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Netflix/Netflix.yaml
+  china-bm7:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/blackmatrix7/china.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/ChinaMax/ChinaMax.yaml
+  reject-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/reject.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+  private-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/private.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt
+  proxy-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/proxy.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+  direct-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/direct.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+  gfw-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/gfw.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt
+  greatfire-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/greatfire.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/greatfire.txt
+  tld-not-cn-ls:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/tld-not-cn.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt
+  cncidr-ls:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/cncidr.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+  lancidr-ls:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/lancidr.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt
+  telegramcidr-ls:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 86400
+    path: ./ruleset/loyalsoldier/telegramcidr.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt
+
 rules:
-  # --- LAN / private / China direct ---
-  - DOMAIN,localhost,DIRECT
-  - DOMAIN-SUFFIX,local,DIRECT
-  - DOMAIN-SUFFIX,localdomain,DIRECT
-  - DOMAIN-SUFFIX,lan,DIRECT
-  - IP-CIDR,0.0.0.0/8,DIRECT,no-resolve
-  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
-  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
-  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
-  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
-  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
-  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
-  - IP-CIDR,224.0.0.0/4,DIRECT,no-resolve
+  - RULE-SET,private-ls,DIRECT
+  - RULE-SET,lancidr-ls,DIRECT,no-resolve
   - GEOIP,LAN,DIRECT,no-resolve
-
-  # --- ad / tracking reject, lightweight built-in ---
-  - DOMAIN-SUFFIX,doubleclick.net,REJECT
-  - DOMAIN-SUFFIX,googleadservices.com,REJECT
-  - DOMAIN-SUFFIX,googlesyndication.com,REJECT
-  - DOMAIN-SUFFIX,googletagmanager.com,REJECT
-  - DOMAIN-SUFFIX,adservice.google.com,REJECT
-  - DOMAIN-SUFFIX,ads-twitter.com,REJECT
-  - DOMAIN-SUFFIX,facebook.net,REJECT
-  - DOMAIN-SUFFIX,scorecardresearch.com,REJECT
-  - DOMAIN-SUFFIX,umeng.com,REJECT
-  - DOMAIN-SUFFIX,umengcloud.com,REJECT
-  - DOMAIN-SUFFIX,cnzz.com,REJECT
-
-  # --- China apps/sites direct ---
-  - DOMAIN-SUFFIX,cn,DIRECT
-  - DOMAIN-SUFFIX,中国,DIRECT
-  - DOMAIN-SUFFIX,中国互联网络信息中心.中国,DIRECT
-  - DOMAIN-SUFFIX,qq.com,DIRECT
-  - DOMAIN-SUFFIX,weixin.qq.com,DIRECT
-  - DOMAIN-SUFFIX,wechat.com,DIRECT
-  - DOMAIN-SUFFIX,tencent.com,DIRECT
-  - DOMAIN-SUFFIX,gtimg.com,DIRECT
-  - DOMAIN-SUFFIX,alicdn.com,DIRECT
-  - DOMAIN-SUFFIX,alibaba.com,DIRECT
-  - DOMAIN-SUFFIX,alipay.com,DIRECT
-  - DOMAIN-SUFFIX,taobao.com,DIRECT
-  - DOMAIN-SUFFIX,tmall.com,DIRECT
-  - DOMAIN-SUFFIX,aliyun.com,DIRECT
-  - DOMAIN-SUFFIX,mmstat.com,DIRECT
-  - DOMAIN-SUFFIX,jd.com,DIRECT
-  - DOMAIN-SUFFIX,360buyimg.com,DIRECT
-  - DOMAIN-SUFFIX,baidu.com,DIRECT
-  - DOMAIN-SUFFIX,bdstatic.com,DIRECT
-  - DOMAIN-SUFFIX,bilibili.com,DIRECT
-  - DOMAIN-SUFFIX,biliapi.net,DIRECT
-  - DOMAIN-SUFFIX,douyin.com,DIRECT
-  - DOMAIN-SUFFIX,byteimg.com,DIRECT
-  - DOMAIN-SUFFIX,bytedance.com,DIRECT
-  - DOMAIN-SUFFIX,ixigua.com,DIRECT
-  - DOMAIN-SUFFIX,kuaishou.com,DIRECT
-  - DOMAIN-SUFFIX,ksyuncdn.com,DIRECT
-  - DOMAIN-SUFFIX,163.com,DIRECT
-  - DOMAIN-SUFFIX,126.net,DIRECT
-  - DOMAIN-SUFFIX,mi.com,DIRECT
-  - DOMAIN-SUFFIX,xiaomi.com,DIRECT
-  - DOMAIN-SUFFIX,mi-img.com,DIRECT
-  - DOMAIN-SUFFIX,huawei.com,DIRECT
-  - DOMAIN-SUFFIX,hicloud.com,DIRECT
-  - DOMAIN-SUFFIX,meituan.com,DIRECT
-  - DOMAIN-SUFFIX,dianping.com,DIRECT
-  - DOMAIN-SUFFIX,amap.com,DIRECT
-  - DOMAIN-SUFFIX,autonavi.com,DIRECT
-  - DOMAIN-SUFFIX,xiaohongshu.com,DIRECT
-  - DOMAIN-SUFFIX,xhscdn.com,DIRECT
-  - DOMAIN-SUFFIX,zhihu.com,DIRECT
-  - DOMAIN-SUFFIX,zhimg.com,DIRECT
-  - DOMAIN-SUFFIX,douban.com,DIRECT
-
-  # --- Apple mostly direct for stability / push / app store in CN ---
-  - DOMAIN-SUFFIX,apple.com,DIRECT
-  - DOMAIN-SUFFIX,icloud.com,DIRECT
-  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
-  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
-  - DOMAIN-SUFFIX,aaplimg.com,DIRECT
-
-  # --- foreign / AI / dev / media force proxy ---
-  - DOMAIN-SUFFIX,openai.com,PROXY
+  - RULE-SET,reject-bm7,REJECT
+  - RULE-SET,reject-ls,REJECT
+  - RULE-SET,openai-bm7,PROXY
+  - RULE-SET,claude-bm7,PROXY
+  - RULE-SET,gemini-bm7,PROXY
+  - RULE-SET,youtube-bm7,PROXY
+  - RULE-SET,github-bm7,PROXY
+  - RULE-SET,telegram-bm7,PROXY
+  - RULE-SET,telegramcidr-ls,PROXY,no-resolve
+  - RULE-SET,netflix-bm7,PROXY
   - DOMAIN-SUFFIX,chatgpt.com,PROXY
+  - DOMAIN-SUFFIX,openai.com,PROXY
   - DOMAIN-SUFFIX,oaistatic.com,PROXY
   - DOMAIN-SUFFIX,oaiusercontent.com,PROXY
   - DOMAIN-SUFFIX,anthropic.com,PROXY
   - DOMAIN-SUFFIX,claude.ai,PROXY
-  - DOMAIN-SUFFIX,gemini.google.com,PROXY
   - DOMAIN-SUFFIX,google.com,PROXY
   - DOMAIN-SUFFIX,googleapis.com,PROXY
   - DOMAIN-SUFFIX,gstatic.com,PROXY
-  - DOMAIN-SUFFIX,googleusercontent.com,PROXY
-  - DOMAIN-SUFFIX,ggpht.com,PROXY
   - DOMAIN-SUFFIX,youtube.com,PROXY
-  - DOMAIN-SUFFIX,ytimg.com,PROXY
   - DOMAIN-SUFFIX,googlevideo.com,PROXY
-  - DOMAIN-SUFFIX,gvt1.com,PROXY
-  - DOMAIN-SUFFIX,gvt2.com,PROXY
   - DOMAIN-SUFFIX,github.com,PROXY
   - DOMAIN-SUFFIX,githubusercontent.com,PROXY
-  - DOMAIN-SUFFIX,githubassets.com,PROXY
-  - DOMAIN-SUFFIX,github.io,PROXY
-  - DOMAIN-SUFFIX,gitlab.com,PROXY
-  - DOMAIN-SUFFIX,docker.com,PROXY
-  - DOMAIN-SUFFIX,docker.io,PROXY
-  - DOMAIN-SUFFIX,npmjs.org,PROXY
-  - DOMAIN-SUFFIX,npmjs.com,PROXY
-  - DOMAIN-SUFFIX,pythonhosted.org,PROXY
-  - DOMAIN-SUFFIX,pypi.org,PROXY
-  - DOMAIN-SUFFIX,huggingface.co,PROXY
-  - DOMAIN-SUFFIX,hf.co,PROXY
   - DOMAIN-SUFFIX,telegram.org,PROXY
   - DOMAIN-SUFFIX,t.me,PROXY
-  - DOMAIN-SUFFIX,tdesktop.com,PROXY
   - DOMAIN-SUFFIX,discord.com,PROXY
-  - DOMAIN-SUFFIX,discord.gg,PROXY
-  - DOMAIN-SUFFIX,discordapp.com,PROXY
-  - DOMAIN-SUFFIX,facebook.com,PROXY
-  - DOMAIN-SUFFIX,fbcdn.net,PROXY
-  - DOMAIN-SUFFIX,instagram.com,PROXY
-  - DOMAIN-SUFFIX,cdninstagram.com,PROXY
-  - DOMAIN-SUFFIX,threads.net,PROXY
-  - DOMAIN-SUFFIX,twitter.com,PROXY
   - DOMAIN-SUFFIX,x.com,PROXY
-  - DOMAIN-SUFFIX,twimg.com,PROXY
+  - DOMAIN-SUFFIX,twitter.com,PROXY
+  - DOMAIN-SUFFIX,instagram.com,PROXY
+  - DOMAIN-SUFFIX,facebook.com,PROXY
   - DOMAIN-SUFFIX,tiktok.com,PROXY
-  - DOMAIN-SUFFIX,tiktokcdn.com,PROXY
   - DOMAIN-SUFFIX,netflix.com,PROXY
-  - DOMAIN-SUFFIX,nflxvideo.net,PROXY
-  - DOMAIN-SUFFIX,nflximg.net,PROXY
-  - DOMAIN-SUFFIX,spotify.com,PROXY
-  - DOMAIN-SUFFIX,scdn.co,PROXY
-  - DOMAIN-SUFFIX,reddit.com,PROXY
-  - DOMAIN-SUFFIX,redd.it,PROXY
-  - DOMAIN-SUFFIX,medium.com,PROXY
-  - DOMAIN-SUFFIX,wikipedia.org,PROXY
-  - DOMAIN-SUFFIX,wikimedia.org,PROXY
-  - DOMAIN-SUFFIX,cloudflare.com,PROXY
-  - DOMAIN-SUFFIX,workers.dev,PROXY
-
-  # --- common non-CN TLDs proxy, avoids incomplete domain list problem ---
-  - DOMAIN-SUFFIX,google,PROXY
-  - DOMAIN-SUFFIX,youtube,PROXY
-  - DOMAIN-SUFFIX,facebook,PROXY
-  - DOMAIN-SUFFIX,twitter,PROXY
-  - DOMAIN-SUFFIX,instagram,PROXY
-  - DOMAIN-SUFFIX,io,PROXY
-  - DOMAIN-SUFFIX,dev,PROXY
-  - DOMAIN-SUFFIX,app,PROXY
-  - DOMAIN-SUFFIX,ai,PROXY
-  - DOMAIN-SUFFIX,me,PROXY
-
-  # --- China IP direct, everything else proxy for fewer app/site misses ---
+  - RULE-SET,proxy-ls,PROXY
+  - RULE-SET,gfw-ls,PROXY
+  - RULE-SET,greatfire-ls,PROXY
+  - RULE-SET,tld-not-cn-ls,PROXY
+  - RULE-SET,china-bm7,DIRECT
+  - RULE-SET,direct-ls,DIRECT
+  - RULE-SET,cncidr-ls,DIRECT,no-resolve
   - GEOIP,CN,DIRECT
   - MATCH,PROXY
