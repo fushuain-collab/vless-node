@@ -1,7 +1,4 @@
-# YUHE Bettbox / Mihomo - online hot rule-providers version
-# Sources: blackmatrix7/ios_rule_script + Loyalsoldier/clash-rules
-# Designed for Bettbox Android. Refresh subscription after update.
-
+# YUHE Bettbox / Mihomo - online rules fixed for Operit JD 51kankan
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -11,11 +8,9 @@ find-process-mode: strict
 global-client-fingerprint: chrome
 unified-delay: true
 tcp-concurrent: true
-
 profile:
   store-selected: true
   store-fake-ip: true
-
 sniffer:
   enable: true
   sniff:
@@ -26,19 +21,6 @@ sniffer:
       ports: [443, 8443]
     QUIC:
       ports: [443, 8443]
-  force-domain:
-    - '+.google.com'
-    - '+.youtube.com'
-    - '+.openai.com'
-    - '+.chatgpt.com'
-    - '+.github.com'
-  skip-domain:
-    - Mijia Cloud
-    - dlg.io.mi.com
-    - '+.apple.com'
-    - '+.wechat.com'
-    - '+.qq.com'
-
 dns:
   enable: true
   listen: 0.0.0.0:1053
@@ -48,26 +30,18 @@ dns:
   fake-ip-filter:
     - '*.lan'
     - '*.local'
-    - '*.localdomain'
-    - '*.example'
-    - '*.invalid'
-    - '*.localhost'
-    - '*.test'
-    - '*.home.arpa'
-    - '+.msftconnecttest.com'
-    - '+.msftncsi.com'
-    - '+.time.windows.com'
-    - '+.pool.ntp.org'
-    - '+.ntp.org.cn'
     - '+.qq.com'
     - '+.tencent.com'
     - '+.wechat.com'
     - '+.weixin.qq.com'
-    - '+.alipay.com'
+    - '+.jd.com'
+    - '+.360buyimg.com'
     - '+.taobao.com'
     - '+.tmall.com'
-    - '+.jd.com'
+    - '+.alicdn.com'
     - '+.mi.com'
+    - '+.msftconnecttest.com'
+    - '+.msftncsi.com'
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -79,11 +53,6 @@ dns:
   proxy-server-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-  nameserver-policy:
-    'geosite:cn':
-      - https://dns.alidns.com/dns-query
-      - https://doh.pub/dns-query
-
 proxies:
   - name: YUHE-CF-172-2053
     type: vless
@@ -99,7 +68,6 @@ proxies:
       path: /vless
       headers:
         Host: w.yuhe.kdns.fr
-
   - name: YUHE-CF-172-8443
     type: vless
     server: 172.64.148.42
@@ -114,7 +82,6 @@ proxies:
       path: /vless
       headers:
         Host: w.yuhe.kdns.fr
-
   - name: YUHE-CF-172-2087
     type: vless
     server: 172.64.148.42
@@ -129,7 +96,6 @@ proxies:
       path: /vless
       headers:
         Host: w.yuhe.kdns.fr
-
   - name: YUHE-CF-104-18-15-2053
     type: vless
     server: 104.18.15.19
@@ -144,245 +110,145 @@ proxies:
       path: /vless
       headers:
         Host: w.yuhe.kdns.fr
-
-  - name: YUHE-CF-104-18-14-2053
-    type: vless
-    server: 104.18.14.19
-    port: 2053
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-
-  - name: YUHE-CF-104-18-15-443
-    type: vless
-    server: 104.18.15.19
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-
-  - name: YUHE-CF-104-18-14-443
-    type: vless
-    server: 104.18.14.19
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-
 proxy-groups:
   - name: PROXY
     type: select
-    proxies:
-      - AUTO
-      - FALLBACK
-      - YUHE-CF-172-2053
-      - YUHE-CF-172-8443
-      - YUHE-CF-172-2087
-      - YUHE-CF-104-18-15-2053
-      - YUHE-CF-104-18-14-2053
-      - YUHE-CF-104-18-15-443
-      - YUHE-CF-104-18-14-443
-      - DIRECT
-
+    proxies: [AUTO, FALLBACK, YUHE-CF-172-2053, YUHE-CF-172-8443, YUHE-CF-172-2087, YUHE-CF-104-18-15-2053, DIRECT]
   - name: AUTO
     type: url-test
-    proxies:
-      - YUHE-CF-172-2053
-      - YUHE-CF-172-8443
-      - YUHE-CF-172-2087
-      - YUHE-CF-104-18-15-2053
-      - YUHE-CF-104-18-14-2053
-      - YUHE-CF-104-18-15-443
-      - YUHE-CF-104-18-14-443
+    proxies: [YUHE-CF-172-2053, YUHE-CF-172-8443, YUHE-CF-172-2087, YUHE-CF-104-18-15-2053]
     url: http://www.gstatic.com/generate_204
     interval: 300
     tolerance: 80
     lazy: true
-
   - name: FALLBACK
     type: fallback
-    proxies:
-      - YUHE-CF-172-2053
-      - YUHE-CF-172-8443
-      - YUHE-CF-172-2087
-      - YUHE-CF-104-18-15-2053
-      - YUHE-CF-104-18-14-2053
-      - YUHE-CF-104-18-15-443
-      - YUHE-CF-104-18-14-443
+    proxies: [YUHE-CF-172-2053, YUHE-CF-172-8443, YUHE-CF-172-2087, YUHE-CF-104-18-15-2053]
     url: http://www.gstatic.com/generate_204
     interval: 300
     lazy: true
-
 rule-providers:
-  reject-bm7:
+  openai:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/reject.yaml
-    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Advertising/Advertising.yaml
-  openai-bm7:
-    type: http
-    behavior: classical
-    format: yaml
-    interval: 86400
-    path: ./ruleset/blackmatrix7/openai.yaml
+    path: ./ruleset/bm7/openai.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/OpenAI/OpenAI.yaml
-  claude-bm7:
+  claude:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/claude.yaml
+    path: ./ruleset/bm7/claude.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Claude/Claude.yaml
-  gemini-bm7:
+  youtube:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/gemini.yaml
-    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Gemini/Gemini.yaml
-  youtube-bm7:
-    type: http
-    behavior: classical
-    format: yaml
-    interval: 86400
-    path: ./ruleset/blackmatrix7/youtube.yaml
+    path: ./ruleset/bm7/youtube.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.yaml
-  github-bm7:
+  github:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/github.yaml
+    path: ./ruleset/bm7/github.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GitHub/GitHub.yaml
-  telegram-bm7:
+  telegram:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/telegram.yaml
+    path: ./ruleset/bm7/telegram.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram.yaml
-  netflix-bm7:
+  netflix:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/netflix.yaml
+    path: ./ruleset/bm7/netflix.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Netflix/Netflix.yaml
-  china-bm7:
+  china:
     type: http
     behavior: classical
     format: yaml
     interval: 86400
-    path: ./ruleset/blackmatrix7/china.yaml
+    path: ./ruleset/bm7/china.yaml
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/ChinaMax/ChinaMax.yaml
-  reject-ls:
+  reject:
     type: http
     behavior: domain
     format: text
     interval: 86400
-    path: ./ruleset/loyalsoldier/reject.txt
+    path: ./ruleset/ls/reject.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
-  private-ls:
+  private:
     type: http
     behavior: domain
     format: text
     interval: 86400
-    path: ./ruleset/loyalsoldier/private.txt
+    path: ./ruleset/ls/private.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt
-  proxy-ls:
+  direct:
     type: http
     behavior: domain
     format: text
     interval: 86400
-    path: ./ruleset/loyalsoldier/proxy.txt
-    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
-  direct-ls:
-    type: http
-    behavior: domain
-    format: text
-    interval: 86400
-    path: ./ruleset/loyalsoldier/direct.txt
+    path: ./ruleset/ls/direct.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
-  gfw-ls:
+  proxy:
     type: http
     behavior: domain
     format: text
     interval: 86400
-    path: ./ruleset/loyalsoldier/gfw.txt
+    path: ./ruleset/ls/proxy.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+  gfw:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/gfw.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt
-  greatfire-ls:
-    type: http
-    behavior: domain
-    format: text
-    interval: 86400
-    path: ./ruleset/loyalsoldier/greatfire.txt
-    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/greatfire.txt
-  tld-not-cn-ls:
-    type: http
-    behavior: domain
-    format: text
-    interval: 86400
-    path: ./ruleset/loyalsoldier/tld-not-cn.txt
-    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt
-  cncidr-ls:
+  cncidr:
     type: http
     behavior: ipcidr
     format: text
     interval: 86400
-    path: ./ruleset/loyalsoldier/cncidr.txt
+    path: ./ruleset/ls/cncidr.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
-  lancidr-ls:
-    type: http
-    behavior: ipcidr
-    format: text
-    interval: 86400
-    path: ./ruleset/loyalsoldier/lancidr.txt
-    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt
-  telegramcidr-ls:
-    type: http
-    behavior: ipcidr
-    format: text
-    interval: 86400
-    path: ./ruleset/loyalsoldier/telegramcidr.txt
-    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt
-
 rules:
-  - RULE-SET,private-ls,DIRECT
-  - RULE-SET,lancidr-ls,DIRECT,no-resolve
+  - RULE-SET,private,DIRECT
   - GEOIP,LAN,DIRECT,no-resolve
-  - RULE-SET,reject-bm7,REJECT
-  - RULE-SET,reject-ls,REJECT
-  - RULE-SET,openai-bm7,PROXY
-  - RULE-SET,claude-bm7,PROXY
-  - RULE-SET,gemini-bm7,PROXY
-  - RULE-SET,youtube-bm7,PROXY
-  - RULE-SET,github-bm7,PROXY
-  - RULE-SET,telegram-bm7,PROXY
-  - RULE-SET,telegramcidr-ls,PROXY,no-resolve
-  - RULE-SET,netflix-bm7,PROXY
+  - DOMAIN-SUFFIX,agnes-ai.com,DIRECT
+  - DOMAIN,apihub.agnes-ai.com,DIRECT
+  - DOMAIN-SUFFIX,jd.com,DIRECT
+  - DOMAIN-SUFFIX,jd.hk,DIRECT
+  - DOMAIN-SUFFIX,360buyimg.com,DIRECT
+  - DOMAIN-SUFFIX,jdimg.com,DIRECT
+  - DOMAIN-SUFFIX,jcloud.com,DIRECT
+  - DOMAIN-SUFFIX,3.cn,DIRECT
+  - DOMAIN-SUFFIX,alicdn.com,DIRECT
+  - DOMAIN-SUFFIX,taobao.com,DIRECT
+  - DOMAIN-SUFFIX,tmall.com,DIRECT
+  - DOMAIN-SUFFIX,alipay.com,DIRECT
+  - DOMAIN-SUFFIX,gtimg.com,DIRECT
+  - DOMAIN-SUFFIX,byteimg.com,DIRECT
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,tencent.com,DIRECT
+  - DOMAIN-SUFFIX,wechat.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.qq.com,DIRECT
+  - DOMAIN-SUFFIX,51kankan.org,PROXY
+  - DOMAIN,m.51kankan.org,PROXY
+  - RULE-SET,reject,REJECT
+  - RULE-SET,openai,PROXY
+  - RULE-SET,claude,PROXY
+  - RULE-SET,youtube,PROXY
+  - RULE-SET,github,PROXY
+  - RULE-SET,telegram,PROXY
+  - RULE-SET,netflix,PROXY
   - DOMAIN-SUFFIX,chatgpt.com,PROXY
   - DOMAIN-SUFFIX,openai.com,PROXY
   - DOMAIN-SUFFIX,oaistatic.com,PROXY
@@ -390,27 +256,20 @@ rules:
   - DOMAIN-SUFFIX,anthropic.com,PROXY
   - DOMAIN-SUFFIX,claude.ai,PROXY
   - DOMAIN-SUFFIX,google.com,PROXY
-  - DOMAIN-SUFFIX,googleapis.com,PROXY
-  - DOMAIN-SUFFIX,gstatic.com,PROXY
   - DOMAIN-SUFFIX,youtube.com,PROXY
   - DOMAIN-SUFFIX,googlevideo.com,PROXY
   - DOMAIN-SUFFIX,github.com,PROXY
   - DOMAIN-SUFFIX,githubusercontent.com,PROXY
-  - DOMAIN-SUFFIX,telegram.org,PROXY
   - DOMAIN-SUFFIX,t.me,PROXY
-  - DOMAIN-SUFFIX,discord.com,PROXY
+  - DOMAIN-SUFFIX,telegram.org,PROXY
   - DOMAIN-SUFFIX,x.com,PROXY
   - DOMAIN-SUFFIX,twitter.com,PROXY
   - DOMAIN-SUFFIX,instagram.com,PROXY
   - DOMAIN-SUFFIX,facebook.com,PROXY
-  - DOMAIN-SUFFIX,tiktok.com,PROXY
-  - DOMAIN-SUFFIX,netflix.com,PROXY
-  - RULE-SET,proxy-ls,PROXY
-  - RULE-SET,gfw-ls,PROXY
-  - RULE-SET,greatfire-ls,PROXY
-  - RULE-SET,tld-not-cn-ls,PROXY
-  - RULE-SET,china-bm7,DIRECT
-  - RULE-SET,direct-ls,DIRECT
-  - RULE-SET,cncidr-ls,DIRECT,no-resolve
+  - RULE-SET,china,DIRECT
+  - RULE-SET,direct,DIRECT
+  - RULE-SET,cncidr,DIRECT,no-resolve
   - GEOIP,CN,DIRECT
+  - RULE-SET,proxy,PROXY
+  - RULE-SET,gfw,PROXY
   - MATCH,PROXY
