@@ -5,10 +5,125 @@ log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
 proxies:
-  - name: YUHE-01
+  - name: YUHE-DOMAIN-443
+    type: vless
+    server: w.yuhe.kdns.fr
+    port: 443
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-DOMAIN-2053
+    type: vless
+    server: w.yuhe.kdns.fr
+    port: 2053
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-172-2053
     type: vless
     server: 172.64.148.42
+    port: 2053
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-172-2087
+    type: vless
+    server: 172.64.148.42
+    port: 2087
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-172-8443
+    type: vless
+    server: 172.64.148.42
+    port: 8443
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-104-18-14-443
+    type: vless
+    server: 104.18.14.19
+    port: 443
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-104-18-15-443
+    type: vless
+    server: 104.18.15.19
+    port: 443
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-104-18-14-2053
+    type: vless
+    server: 104.18.14.19
+    port: 2053
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-CF-104-18-15-2053
+    type: vless
+    server: 104.18.15.19
     port: 2053
     uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
     network: ws
@@ -24,10 +139,51 @@ proxy-groups:
   - name: PROXY
     type: select
     proxies:
-      - YUHE-01
+      - AUTO
+      - FALLBACK
+      - YUHE-DOMAIN-443
+      - YUHE-DOMAIN-2053
+      - YUHE-CF-172-2053
+      - YUHE-CF-172-2087
+      - YUHE-CF-172-8443
+      - YUHE-CF-104-18-14-443
+      - YUHE-CF-104-18-15-443
+      - YUHE-CF-104-18-14-2053
+      - YUHE-CF-104-18-15-2053
       - DIRECT
+  - name: AUTO
+    type: url-test
+    proxies:
+      - YUHE-DOMAIN-443
+      - YUHE-DOMAIN-2053
+      - YUHE-CF-172-2053
+      - YUHE-CF-172-2087
+      - YUHE-CF-172-8443
+      - YUHE-CF-104-18-14-443
+      - YUHE-CF-104-18-15-443
+      - YUHE-CF-104-18-14-2053
+      - YUHE-CF-104-18-15-2053
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+  - name: FALLBACK
+    type: fallback
+    proxies:
+      - YUHE-CF-172-2053
+      - YUHE-DOMAIN-443
+      - YUHE-DOMAIN-2053
+      - YUHE-CF-172-2087
+      - YUHE-CF-172-8443
+      - YUHE-CF-104-18-14-443
+      - YUHE-CF-104-18-15-443
+      - YUHE-CF-104-18-14-2053
+      - YUHE-CF-104-18-15-2053
+    url: https://www.gstatic.com/generate_204
+    interval: 180
 rules:
   - DOMAIN-SUFFIX,youtube.com,PROXY
+  - DOMAIN-SUFFIX,googlevideo.com,PROXY
+  - DOMAIN-SUFFIX,ytimg.com,PROXY
   - DOMAIN-SUFFIX,google.com,PROXY
   - DOMAIN-SUFFIX,github.com,PROXY
   - DOMAIN-SUFFIX,telegram.org,PROXY
