@@ -1,4 +1,4 @@
-# YUHE Bettbox / Mihomo - 15 Cloudflare candidate nodes + online rules
+# YUHE Bettbox / Mihomo - optimized real-tested 172 nodes + online rules
 mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -54,10 +54,52 @@ dns:
     - 223.5.5.5
     - 119.29.29.29
 proxies:
+  - name: YUHE-172-443
+    type: vless
+    server: 172.64.148.42
+    port: 443
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-172-2083
+    type: vless
+    server: 172.64.148.42
+    port: 2083
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
   - name: YUHE-172-2053
     type: vless
     server: 172.64.148.42
     port: 2053
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+    network: ws
+    tls: true
+    udp: true
+    servername: w.yuhe.kdns.fr
+    client-fingerprint: chrome
+    ws-opts:
+      path: /vless
+      headers:
+        Host: w.yuhe.kdns.fr
+  - name: YUHE-172-2096
+    type: vless
+    server: 172.64.148.42
+    port: 2096
     uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
     network: ws
     tls: true
@@ -96,188 +138,20 @@ proxies:
       path: /vless
       headers:
         Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2083
-    type: vless
-    server: 172.64.148.42
-    port: 2083
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2096
-    type: vless
-    server: 172.64.148.42
-    port: 2096
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-443
-    type: vless
-    server: 172.64.148.42
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-2053
-    type: vless
-    server: 104.18.15.19
-    port: 2053
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-8443
-    type: vless
-    server: 104.18.15.19
-    port: 8443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-2087
-    type: vless
-    server: 104.18.15.19
-    port: 2087
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-2083
-    type: vless
-    server: 104.18.15.19
-    port: 2083
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-2096
-    type: vless
-    server: 104.18.15.19
-    port: 2096
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-15-443
-    type: vless
-    server: 104.18.15.19
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-14-2053
-    type: vless
-    server: 104.18.14.19
-    port: 2053
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-14-8443
-    type: vless
-    server: 104.18.14.19
-    port: 8443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-104-18-14-443
-    type: vless
-    server: 104.18.14.19
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
 proxy-groups:
   - name: PROXY
     type: select
-    proxies: [AUTO, FALLBACK, YUHE-172-2053, YUHE-172-8443, YUHE-172-2087, YUHE-172-2083, YUHE-172-2096, YUHE-172-443, YUHE-104-18-15-2053, YUHE-104-18-15-8443, YUHE-104-18-15-2087, YUHE-104-18-15-2083, YUHE-104-18-15-2096, YUHE-104-18-15-443, YUHE-104-18-14-2053, YUHE-104-18-14-8443, YUHE-104-18-14-443, DIRECT]
+    proxies: [AUTO, FALLBACK, YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087, DIRECT]
   - name: AUTO
     type: url-test
-    proxies: [YUHE-172-2053, YUHE-172-8443, YUHE-172-2087, YUHE-172-2083, YUHE-172-2096, YUHE-172-443, YUHE-104-18-15-2053, YUHE-104-18-15-8443, YUHE-104-18-15-2087, YUHE-104-18-15-2083, YUHE-104-18-15-2096, YUHE-104-18-15-443, YUHE-104-18-14-2053, YUHE-104-18-14-8443, YUHE-104-18-14-443]
+    proxies: [YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087]
     url: http://www.gstatic.com/generate_204
     interval: 300
-    tolerance: 80
+    tolerance: 30
     lazy: true
   - name: FALLBACK
     type: fallback
-    proxies: [YUHE-172-2053, YUHE-172-8443, YUHE-172-2087, YUHE-172-2083, YUHE-172-2096, YUHE-172-443, YUHE-104-18-15-2053, YUHE-104-18-15-8443, YUHE-104-18-15-2087, YUHE-104-18-15-2083, YUHE-104-18-15-2096, YUHE-104-18-15-443, YUHE-104-18-14-2053, YUHE-104-18-14-8443, YUHE-104-18-14-443]
+    proxies: [YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087]
     url: http://www.gstatic.com/generate_204
     interval: 300
     lazy: true
