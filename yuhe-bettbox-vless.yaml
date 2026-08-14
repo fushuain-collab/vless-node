@@ -1,5 +1,4 @@
-# YUHE Bettbox / Mihomo - optimized real-tested 172 nodes + online rules
-mixed-port: 7890
+# YUHE Bettbox / Mihomo - DNS pollution DoH policy test (isolated branch)
 allow-lan: false
 mode: rule
 log-level: warning
@@ -15,12 +14,18 @@ sniffer:
   enable: true
   sniff:
     HTTP:
-      ports: [80, 8080-8880]
+      ports:
+      - 80
+      - 8080-8880
       override-destination: true
     TLS:
-      ports: [443, 8443]
+      ports:
+      - 443
+      - 8443
     QUIC:
-      ports: [443, 8443]
+      ports:
+      - 443
+      - 8443
 dns:
   enable: true
   listen: 0.0.0.0:1053
@@ -28,133 +33,181 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter:
-    - '*.lan'
-    - '*.local'
-    - '+.qq.com'
-    - '+.tencent.com'
-    - '+.wechat.com'
-    - '+.weixin.qq.com'
-    - '+.jd.com'
-    - '+.360buyimg.com'
-    - '+.taobao.com'
-    - '+.tmall.com'
-    - '+.alicdn.com'
-    - '+.mi.com'
-    - '+.msftconnecttest.com'
-    - '+.msftncsi.com'
+  - '*.lan'
+  - '*.local'
+  - +.qq.com
+  - +.tencent.com
+  - +.wechat.com
+  - +.weixin.qq.com
+  - +.jd.com
+  - +.360buyimg.com
+  - +.taobao.com
+  - +.tmall.com
+  - +.alicdn.com
+  - +.mi.com
+  - +.msftconnecttest.com
+  - +.msftncsi.com
+  - +.cloudflare.com
+  - +.cloudflare.net
+  - +.cloudflareaccess.com
+  - +.cloudflareclient.com
+  - +.workers.dev
   default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  proxy-server-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  respect-rules: true
+  use-hosts: false
+  use-system-hosts: false
+  direct-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver-policy:
+    geosite:cn:
     - 223.5.5.5
     - 119.29.29.29
-  nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
+    geosite:geolocation-!cn:
     - https://1.1.1.1/dns-query
     - https://8.8.8.8/dns-query
-  proxy-server-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
+    - https://dns.alidns.com/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    geosite:
+    - gfw
+    ipcidr:
+    - 240.0.0.0/4
+    - 0.0.0.0/32
 proxies:
-  - name: YUHE-172-443
-    type: vless
-    server: 172.64.148.42
-    port: 443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2083
-    type: vless
-    server: 172.64.148.42
-    port: 2083
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2053
-    type: vless
-    server: 172.64.148.42
-    port: 2053
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2096
-    type: vless
-    server: 172.64.148.42
-    port: 2096
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-8443
-    type: vless
-    server: 172.64.148.42
-    port: 8443
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
-  - name: YUHE-172-2087
-    type: vless
-    server: 172.64.148.42
-    port: 2087
-    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
-    network: ws
-    tls: true
-    udp: true
-    servername: w.yuhe.kdns.fr
-    client-fingerprint: chrome
-    ws-opts:
-      path: /vless
-      headers:
-        Host: w.yuhe.kdns.fr
+- name: YUHE-172-443
+  type: vless
+  server: 172.64.148.42
+  port: 443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: YUHE-172-2083
+  type: vless
+  server: 172.64.148.42
+  port: 2083
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: YUHE-172-2053
+  type: vless
+  server: 172.64.148.42
+  port: 2053
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: YUHE-172-2096
+  type: vless
+  server: 172.64.148.42
+  port: 2096
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: YUHE-172-8443
+  type: vless
+  server: 172.64.148.42
+  port: 8443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: YUHE-172-2087
+  type: vless
+  server: 172.64.148.42
+  port: 2087
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
 proxy-groups:
-  - name: PROXY
-    type: select
-    proxies: [AUTO, FALLBACK, YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087, DIRECT]
-  - name: AUTO
-    type: url-test
-    proxies: [YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087]
-    url: http://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 30
-    lazy: true
-  - name: FALLBACK
-    type: fallback
-    proxies: [YUHE-172-443, YUHE-172-2083, YUHE-172-2053, YUHE-172-2096, YUHE-172-8443, YUHE-172-2087]
-    url: http://www.gstatic.com/generate_204
-    interval: 300
-    lazy: true
+- name: PROXY
+  type: select
+  proxies:
+  - AUTO
+  - FALLBACK
+  - YUHE-172-443
+  - YUHE-172-2083
+  - YUHE-172-2053
+  - YUHE-172-2096
+  - YUHE-172-8443
+  - YUHE-172-2087
+  - DIRECT
+- name: AUTO
+  type: url-test
+  proxies:
+  - YUHE-172-443
+  - YUHE-172-2083
+  - YUHE-172-2053
+  - YUHE-172-2096
+  - YUHE-172-8443
+  - YUHE-172-2087
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 30
+  lazy: true
+- name: FALLBACK
+  type: fallback
+  proxies:
+  - YUHE-172-443
+  - YUHE-172-2083
+  - YUHE-172-2053
+  - YUHE-172-2096
+  - YUHE-172-8443
+  - YUHE-172-2087
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  lazy: true
 rule-providers:
   openai:
     type: http
@@ -248,56 +301,56 @@ rule-providers:
     path: ./ruleset/ls/cncidr.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
 rules:
-  - RULE-SET,private,DIRECT
-  - GEOIP,LAN,DIRECT,no-resolve
-  - DOMAIN-SUFFIX,agnes-ai.com,DIRECT
-  - DOMAIN,apihub.agnes-ai.com,DIRECT
-  - DOMAIN-SUFFIX,jd.com,DIRECT
-  - DOMAIN-SUFFIX,jd.hk,DIRECT
-  - DOMAIN-SUFFIX,360buyimg.com,DIRECT
-  - DOMAIN-SUFFIX,jdimg.com,DIRECT
-  - DOMAIN-SUFFIX,jcloud.com,DIRECT
-  - DOMAIN-SUFFIX,3.cn,DIRECT
-  - DOMAIN-SUFFIX,alicdn.com,DIRECT
-  - DOMAIN-SUFFIX,taobao.com,DIRECT
-  - DOMAIN-SUFFIX,tmall.com,DIRECT
-  - DOMAIN-SUFFIX,alipay.com,DIRECT
-  - DOMAIN-SUFFIX,gtimg.com,DIRECT
-  - DOMAIN-SUFFIX,byteimg.com,DIRECT
-  - DOMAIN-SUFFIX,qq.com,DIRECT
-  - DOMAIN-SUFFIX,tencent.com,DIRECT
-  - DOMAIN-SUFFIX,wechat.com,DIRECT
-  - DOMAIN-SUFFIX,weixin.qq.com,DIRECT
-  - DOMAIN-SUFFIX,51kankan.org,PROXY
-  - DOMAIN,m.51kankan.org,PROXY
-  - RULE-SET,reject,REJECT
-  - RULE-SET,openai,PROXY
-  - RULE-SET,claude,PROXY
-  - RULE-SET,youtube,PROXY
-  - RULE-SET,github,PROXY
-  - RULE-SET,telegram,PROXY
-  - RULE-SET,netflix,PROXY
-  - DOMAIN-SUFFIX,chatgpt.com,PROXY
-  - DOMAIN-SUFFIX,openai.com,PROXY
-  - DOMAIN-SUFFIX,oaistatic.com,PROXY
-  - DOMAIN-SUFFIX,oaiusercontent.com,PROXY
-  - DOMAIN-SUFFIX,anthropic.com,PROXY
-  - DOMAIN-SUFFIX,claude.ai,PROXY
-  - DOMAIN-SUFFIX,google.com,PROXY
-  - DOMAIN-SUFFIX,youtube.com,PROXY
-  - DOMAIN-SUFFIX,googlevideo.com,PROXY
-  - DOMAIN-SUFFIX,github.com,PROXY
-  - DOMAIN-SUFFIX,githubusercontent.com,PROXY
-  - DOMAIN-SUFFIX,t.me,PROXY
-  - DOMAIN-SUFFIX,telegram.org,PROXY
-  - DOMAIN-SUFFIX,x.com,PROXY
-  - DOMAIN-SUFFIX,twitter.com,PROXY
-  - DOMAIN-SUFFIX,instagram.com,PROXY
-  - DOMAIN-SUFFIX,facebook.com,PROXY
-  - RULE-SET,china,DIRECT
-  - RULE-SET,direct,DIRECT
-  - RULE-SET,cncidr,DIRECT,no-resolve
-  - GEOIP,CN,DIRECT
-  - RULE-SET,proxy,PROXY
-  - RULE-SET,gfw,PROXY
-  - MATCH,PROXY
+- RULE-SET,private,DIRECT
+- GEOIP,LAN,DIRECT,no-resolve
+- DOMAIN-SUFFIX,agnes-ai.com,DIRECT
+- DOMAIN,apihub.agnes-ai.com,DIRECT
+- DOMAIN-SUFFIX,jd.com,DIRECT
+- DOMAIN-SUFFIX,jd.hk,DIRECT
+- DOMAIN-SUFFIX,360buyimg.com,DIRECT
+- DOMAIN-SUFFIX,jdimg.com,DIRECT
+- DOMAIN-SUFFIX,jcloud.com,DIRECT
+- DOMAIN-SUFFIX,3.cn,DIRECT
+- DOMAIN-SUFFIX,alicdn.com,DIRECT
+- DOMAIN-SUFFIX,taobao.com,DIRECT
+- DOMAIN-SUFFIX,tmall.com,DIRECT
+- DOMAIN-SUFFIX,alipay.com,DIRECT
+- DOMAIN-SUFFIX,gtimg.com,DIRECT
+- DOMAIN-SUFFIX,byteimg.com,DIRECT
+- DOMAIN-SUFFIX,qq.com,DIRECT
+- DOMAIN-SUFFIX,tencent.com,DIRECT
+- DOMAIN-SUFFIX,wechat.com,DIRECT
+- DOMAIN-SUFFIX,weixin.qq.com,DIRECT
+- DOMAIN-SUFFIX,51kankan.org,PROXY
+- DOMAIN,m.51kankan.org,PROXY
+- RULE-SET,reject,REJECT
+- RULE-SET,openai,PROXY
+- RULE-SET,claude,PROXY
+- RULE-SET,youtube,PROXY
+- RULE-SET,github,PROXY
+- RULE-SET,telegram,PROXY
+- RULE-SET,netflix,PROXY
+- DOMAIN-SUFFIX,chatgpt.com,PROXY
+- DOMAIN-SUFFIX,openai.com,PROXY
+- DOMAIN-SUFFIX,oaistatic.com,PROXY
+- DOMAIN-SUFFIX,oaiusercontent.com,PROXY
+- DOMAIN-SUFFIX,anthropic.com,PROXY
+- DOMAIN-SUFFIX,claude.ai,PROXY
+- DOMAIN-SUFFIX,google.com,PROXY
+- DOMAIN-SUFFIX,youtube.com,PROXY
+- DOMAIN-SUFFIX,googlevideo.com,PROXY
+- DOMAIN-SUFFIX,github.com,PROXY
+- DOMAIN-SUFFIX,githubusercontent.com,PROXY
+- DOMAIN-SUFFIX,t.me,PROXY
+- DOMAIN-SUFFIX,telegram.org,PROXY
+- DOMAIN-SUFFIX,x.com,PROXY
+- DOMAIN-SUFFIX,twitter.com,PROXY
+- DOMAIN-SUFFIX,instagram.com,PROXY
+- DOMAIN-SUFFIX,facebook.com,PROXY
+- RULE-SET,china,DIRECT
+- RULE-SET,direct,DIRECT
+- RULE-SET,cncidr,DIRECT,no-resolve
+- GEOIP,CN,DIRECT
+- RULE-SET,proxy,PROXY
+- RULE-SET,gfw,PROXY
+- MATCH,PROXY
