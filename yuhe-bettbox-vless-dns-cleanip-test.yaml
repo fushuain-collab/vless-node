@@ -1,0 +1,473 @@
+# YUHE Bettbox / Mihomo - DNS clean-IP test with diversified Cloudflare entry pool
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: warning
+ipv6: false
+find-process-mode: strict
+global-client-fingerprint: chrome
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-selected: true
+  store-fake-ip: true
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports:
+      - 80
+      - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+      - 443
+      - 8443
+    QUIC:
+      ports:
+      - 443
+      - 8443
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  respect-rules: true
+  use-hosts: false
+  use-system-hosts: false
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - '*.localhost'
+  - '*.localdomain'
+  - +.msftconnecttest.com
+  - +.msftncsi.com
+  - +.qq.com
+  - +.tencent.com
+  - +.wechat.com
+  - +.weixin.qq.com
+  - +.jd.com
+  - +.360buyimg.com
+  - +.jdimg.com
+  - +.taobao.com
+  - +.tmall.com
+  - +.alicdn.com
+  - +.mi.com
+  - +.bilibili.com
+  - +.cloudflare.com
+  - +.cloudflare.net
+  - +.cloudflareaccess.com
+  - +.cloudflareclient.com
+  - +.workers.dev
+  - w.yuhe.kdns.fr
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  proxy-server-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  direct-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  - tls://1.1.1.1:853
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    geosite:
+    - gfw
+    ipcidr:
+    - 240.0.0.0/4
+    - 0.0.0.0/32
+    domain:
+    - +.google.com
+    - +.github.com
+    - +.youtube.com
+    - +.telegram.org
+    - +.openai.com
+    - +.chatgpt.com
+    - +.anthropic.com
+    - +.claude.ai
+  nameserver-policy:
+    geosite:cn:
+    - 223.5.5.5
+    - 119.29.29.29
+    geosite:geolocation-!cn:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+    domain:raw.githubusercontent.com:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+    domain:github.com:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+    domain:githubusercontent.com:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+proxies:
+- name: STABLE-172-443
+  type: vless
+  server: 172.64.148.42
+  port: 443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: STABLE-172-2053
+  type: vless
+  server: 172.64.148.42
+  port: 2053
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: STABLE-172-2087
+  type: vless
+  server: 172.64.148.42
+  port: 2087
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-443-01
+  type: vless
+  server: 172.66.0.1
+  port: 443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-443-02
+  type: vless
+  server: 172.66.0.2
+  port: 443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-2053
+  type: vless
+  server: 172.66.3.63
+  port: 2053
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-2083
+  type: vless
+  server: 172.66.3.74
+  port: 2083
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-2087
+  type: vless
+  server: 172.66.3.56
+  port: 2087
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-17266-2096
+  type: vless
+  server: 172.66.3.76
+  port: 2096
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-10417-2083
+  type: vless
+  server: 104.17.181.145
+  port: 2083
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-10417-443
+  type: vless
+  server: 104.17.22.30
+  port: 443
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+- name: ALT-19841-2087
+  type: vless
+  server: 198.41.208.94
+  port: 2087
+  uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
+  network: ws
+  tls: true
+  udp: true
+  servername: w.yuhe.kdns.fr
+  client-fingerprint: chrome
+  ws-opts:
+    path: /vless
+    headers:
+      Host: w.yuhe.kdns.fr
+proxy-groups:
+- name: PROXY
+  type: select
+  proxies:
+  - AUTO
+  - FALLBACK
+  - STABLE-172-443
+  - STABLE-172-2053
+  - STABLE-172-2087
+  - ALT-17266-443-01
+  - ALT-17266-443-02
+  - ALT-17266-2053
+  - ALT-17266-2083
+  - ALT-17266-2087
+  - ALT-17266-2096
+  - ALT-10417-2083
+  - ALT-10417-443
+  - ALT-19841-2087
+  - DIRECT
+- name: AUTO
+  type: url-test
+  proxies: &id001
+  - STABLE-172-443
+  - STABLE-172-2053
+  - STABLE-172-2087
+  - ALT-17266-443-01
+  - ALT-17266-443-02
+  - ALT-17266-2053
+  - ALT-17266-2083
+  - ALT-17266-2087
+  - ALT-17266-2096
+  - ALT-10417-2083
+  - ALT-10417-443
+  - ALT-19841-2087
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 80
+  lazy: false
+- name: FALLBACK
+  type: fallback
+  proxies: *id001
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  lazy: false
+rule-providers:
+  openai:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/openai.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/OpenAI/OpenAI.yaml
+  claude:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/claude.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Claude/Claude.yaml
+  youtube:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/youtube.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.yaml
+  github:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/github.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GitHub/GitHub.yaml
+  telegram:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/telegram.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram.yaml
+  netflix:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/netflix.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Netflix/Netflix.yaml
+  china:
+    type: http
+    behavior: classical
+    format: yaml
+    interval: 86400
+    path: ./ruleset/bm7/china.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/ChinaMax/ChinaMax.yaml
+  reject:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/reject.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+  private:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/private.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt
+  direct:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/direct.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+  proxy:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/proxy.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+  gfw:
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/gfw.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt
+  cncidr:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 86400
+    path: ./ruleset/ls/cncidr.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+rules:
+- RULE-SET,private,DIRECT
+- GEOIP,LAN,DIRECT,no-resolve
+- DOMAIN-SUFFIX,agnes-ai.com,DIRECT
+- DOMAIN,apihub.agnes-ai.com,DIRECT
+- DOMAIN-SUFFIX,jd.com,DIRECT
+- DOMAIN-SUFFIX,jd.hk,DIRECT
+- DOMAIN-SUFFIX,360buyimg.com,DIRECT
+- DOMAIN-SUFFIX,jdimg.com,DIRECT
+- DOMAIN-SUFFIX,jcloud.com,DIRECT
+- DOMAIN-SUFFIX,3.cn,DIRECT
+- DOMAIN-SUFFIX,alicdn.com,DIRECT
+- DOMAIN-SUFFIX,taobao.com,DIRECT
+- DOMAIN-SUFFIX,tmall.com,DIRECT
+- DOMAIN-SUFFIX,alipay.com,DIRECT
+- DOMAIN-SUFFIX,gtimg.com,DIRECT
+- DOMAIN-SUFFIX,byteimg.com,DIRECT
+- DOMAIN-SUFFIX,qq.com,DIRECT
+- DOMAIN-SUFFIX,tencent.com,DIRECT
+- DOMAIN-SUFFIX,wechat.com,DIRECT
+- DOMAIN-SUFFIX,weixin.qq.com,DIRECT
+- DOMAIN-SUFFIX,cloudflare.com,DIRECT
+- DOMAIN-SUFFIX,cloudflare.net,DIRECT
+- DOMAIN-SUFFIX,51kankan.org,PROXY
+- DOMAIN,m.51kankan.org,PROXY
+- RULE-SET,reject,REJECT
+- RULE-SET,openai,PROXY
+- RULE-SET,claude,PROXY
+- RULE-SET,youtube,PROXY
+- RULE-SET,github,PROXY
+- RULE-SET,telegram,PROXY
+- RULE-SET,netflix,PROXY
+- DOMAIN-SUFFIX,chatgpt.com,PROXY
+- DOMAIN-SUFFIX,openai.com,PROXY
+- DOMAIN-SUFFIX,oaistatic.com,PROXY
+- DOMAIN-SUFFIX,oaiusercontent.com,PROXY
+- DOMAIN-SUFFIX,anthropic.com,PROXY
+- DOMAIN-SUFFIX,claude.ai,PROXY
+- DOMAIN-SUFFIX,google.com,PROXY
+- DOMAIN-SUFFIX,youtube.com,PROXY
+- DOMAIN-SUFFIX,googlevideo.com,PROXY
+- DOMAIN-SUFFIX,github.com,PROXY
+- DOMAIN-SUFFIX,githubusercontent.com,PROXY
+- DOMAIN-SUFFIX,t.me,PROXY
+- DOMAIN-SUFFIX,telegram.org,PROXY
+- DOMAIN-SUFFIX,x.com,PROXY
+- DOMAIN-SUFFIX,twitter.com,PROXY
+- DOMAIN-SUFFIX,instagram.com,PROXY
+- DOMAIN-SUFFIX,facebook.com,PROXY
+- RULE-SET,china,DIRECT
+- RULE-SET,direct,DIRECT
+- RULE-SET,cncidr,DIRECT,no-resolve
+- GEOIP,CN,DIRECT
+- RULE-SET,proxy,PROXY
+- RULE-SET,gfw,PROXY
+- MATCH,PROXY
