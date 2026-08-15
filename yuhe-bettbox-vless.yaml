@@ -1,4 +1,4 @@
-# YUHE Bettbox / Mihomo - optimized real-tested 172 nodes + online rules
+# YUHE Bettbox / Mihomo - stable 6-endpoint profile + online rules
 mixed-port: 7890
 allow-lan: false
 mode: rule
