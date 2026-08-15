@@ -110,6 +110,12 @@ dns:
     domain:githubusercontent.com:
     - https://1.1.1.1/dns-query
     - https://8.8.8.8/dns-query
+    domain:yes1.xn--mesv7f5toqlp.biz:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+    domain:xn--mesv7f5toqlp.biz:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
 proxies:
 - name: STABLE-172-443
   type: vless
@@ -416,6 +422,8 @@ rule-providers:
     path: ./ruleset/ls/cncidr.txt
     url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
 rules:
+- DOMAIN,yes1.xn--mesv7f5toqlp.biz,PROXY
+- DOMAIN-SUFFIX,xn--mesv7f5toqlp.biz,PROXY
 - RULE-SET,private,DIRECT
 - GEOIP,LAN,DIRECT,no-resolve
 - DOMAIN-SUFFIX,agnes-ai.com,DIRECT
