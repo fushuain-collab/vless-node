@@ -18,7 +18,7 @@ apk add py3-yaml
 python3 tools/validate_subscriptions.py
 ```
 
-The checker validates YAML syntax, proxy list shape, duplicate names/endpoints, and mismatches between a numeric node count in the title and the actual proxy count. It does not claim that a node works on a phone; real network acceptance still requires mobile testing.
+The checker validates YAML syntax, proxy list shape, duplicate names/endpoints, and mismatches between a numeric node count in the title and the actual proxy count. It runs locally and in GitHub Actions via `.github/workflows/validate-subscriptions.yml`. It does not claim that a node works on a phone; real network acceptance still requires mobile testing.
 
 ## Repository conventions
 
