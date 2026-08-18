@@ -1,6 +1,7 @@
 import { connect } from "cloudflare:sockets";
 
 const UUID = "e0240134-0986-4b92-a230-fdc8d1200456";
+const ENTRY_IPS = ["172.64.145.155", "172.64.144.178", "104.16.151.165"];
 const WS_PATHS = new Set(["/" + UUID, "/vless"]);
 
 export default {
@@ -42,6 +43,21 @@ function makeVlessUri(host) {
 }
 
 function makeYamlConfig(host) {
+  const entries = ENTRY_IPS.map((ip, index) => `  - name: CF-NFS-Asia-${index + 1}
+    type: vless
+    server: ${ip}
+    port: 443
+    uuid: ${UUID}
+    network: ws
+    tls: true
+    udp: true
+    servername: ${host}
+    client-fingerprint: chrome
+    ws-opts:
+      path: /${UUID}
+      headers:
+        Host: ${host}`).join("\n");
+  const names = ENTRY_IPS.map((_, index) => `CF-NFS-Asia-${index + 1}`);
   return `mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -63,26 +79,30 @@ dns:
     - https://1.1.1.1/dns-query
     - https://8.8.8.8/dns-query
 proxies:
-  - name: CF-NFS-Asia
-    type: vless
-    server: ${host}
-    port: 443
-    uuid: ${UUID}
-    network: ws
-    tls: true
-    udp: true
-    servername: ${host}
-    client-fingerprint: chrome
-    ws-opts:
-      path: /${UUID}
-      headers:
-        Host: ${host}
+${entries}
 proxy-groups:
   - name: PROXY
     type: select
     proxies:
-      - CF-NFS-Asia
+      - AUTO
+      - FALLBACK
+      - ${names.join("\n      - ")}
       - DIRECT
+  - name: AUTO
+    type: url-test
+    proxies:
+      - ${names.join("\n      - ")}
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 80
+    lazy: false
+  - name: FALLBACK
+    type: fallback
+    proxies:
+      - ${names.join("\n      - ")}
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    lazy: false
 rules:
   - MATCH,PROXY
 `;
