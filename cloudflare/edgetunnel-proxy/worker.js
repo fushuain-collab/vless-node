@@ -42,22 +42,23 @@ function makeVlessUri(host) {
   return `vless://${UUID}@${host}:443?encryption=none&security=tls&sni=${host}&fp=chrome&type=ws&host=${host}&path=%2F${UUID}#edgetunnel-proxy`;
 }
 
-function makeYamlConfig(host) {
-  const entries = ENTRY_IPS.map((ip, index) => `  - name: CF-NFS-Asia-${index + 1}
+function makeYamlConfig() {
+  const endpoints = [443, 2053, 2083, 2096, 8443, 2087];
+  const names = endpoints.map((port) => `YUHE-172-${port}`);
+  const entries = endpoints.map((port, index) => `  - name: ${names[index]}
     type: vless
-    server: ${ip}
-    port: 443
-    uuid: ${UUID}
+    server: 172.64.148.42
+    port: ${port}
+    uuid: 4f05f0b9-f75d-4cc3-8d2f-4f7ab7f65e0a
     network: ws
     tls: true
     udp: true
-    servername: ${host}
+    servername: w.yuhe.kdns.fr
     client-fingerprint: chrome
     ws-opts:
-      path: /${UUID}
+      path: /vless
       headers:
-        Host: ${host}`).join("\n");
-  const names = ENTRY_IPS.map((_, index) => `CF-NFS-Asia-${index + 1}`);
+        Host: w.yuhe.kdns.fr`).join("\n");
   return `mixed-port: 7890
 allow-lan: false
 mode: rule
@@ -94,7 +95,7 @@ proxy-groups:
       - ${names.join("\n      - ")}
     url: https://www.gstatic.com/generate_204
     interval: 300
-    tolerance: 80
+    tolerance: 30
     lazy: false
   - name: FALLBACK
     type: fallback
