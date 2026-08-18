@@ -22,7 +22,13 @@ export default {
     }
 
     if (url.pathname === "/" + UUID) {
-      return new Response(makeConfig(url.host), {
+      return new Response(makeYamlConfig(url.host), {
+        headers: { "content-type": "text/yaml; charset=utf-8", "cache-control": "no-store" },
+      });
+    }
+
+    if (url.pathname === "/uri") {
+      return new Response(makeVlessUri(url.host) + "\n", {
         headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
       });
     }
@@ -31,8 +37,55 @@ export default {
   },
 };
 
-function makeConfig(host) {
+function makeVlessUri(host) {
   return `vless://${UUID}@${host}:443?encryption=none&security=tls&sni=${host}&fp=chrome&type=ws&host=${host}&path=%2F${UUID}#edgetunnel-proxy`;
+}
+
+function makeYamlConfig(host) {
+  return `mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: redir-host
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+proxies:
+  - name: CF-NFS-Asia
+    type: vless
+    server: ${host}
+    port: 443
+    uuid: ${UUID}
+    network: ws
+    tls: true
+    udp: true
+    servername: ${host}
+    client-fingerprint: chrome
+    ws-opts:
+      path: /${UUID}
+      headers:
+        Host: ${host}
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - CF-NFS-Asia
+      - DIRECT
+rules:
+  - MATCH,PROXY
+`;
 }
 
 async function vlessOverWSHandler(request) {
